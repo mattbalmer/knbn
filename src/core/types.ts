@@ -18,6 +18,13 @@ export interface Column {
   name: string;
 }
 
+export interface Sprint {
+  name: string;
+  startDate?: string;
+  endDate?: string;
+  goal?: string;
+}
+
 export interface Board {
   configuration: {
     name: string;
@@ -25,6 +32,7 @@ export interface Board {
     columns: Column[];
   };
   tasks: Record<number, Task>;
+  sprints?: Sprint[];
   metadata: {
     nextId: number;
     createdAt: string;
