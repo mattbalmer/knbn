@@ -20,6 +20,7 @@ tasks:
     title: Remove CWD print
     description: ''
     column: done
+    sprint: Alpha
     dates:
       created: '2025-06-29T18:56:24.822Z'
       updated: '2025-06-29T18:59:00.000Z'

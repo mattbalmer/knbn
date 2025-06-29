@@ -7,7 +7,7 @@ describe('taskUtils', () => {
       const taskData: Partial<Task> = {
         title: 'Test Task',
         description: 'Test Description',
-        status: 'in-progress',
+        column: 'in-progress',
         labels: ['test', 'urgent'],
         assignee: 'john',
         storyPoints: 5
@@ -19,7 +19,7 @@ describe('taskUtils', () => {
         id: 42,
         title: 'Test Task',
         description: 'Test Description',
-        status: 'in-progress',
+        column: 'in-progress',
         labels: ['test', 'urgent'],
         assignee: 'john',
         storyPoints: 5
@@ -37,7 +37,7 @@ describe('taskUtils', () => {
         id: 1,
         title: 'Untitled Task',
         description: '',
-        status: 'todo'
+        column: 'todo'
       });
       expect(result.dates.created).toBeDefined();
       expect(result.dates.updated).toBeDefined();
@@ -59,7 +59,7 @@ describe('taskUtils', () => {
         id: 10,
         title: 'Partial Task',
         description: '',
-        status: 'todo',
+        column: 'todo',
         assignee: 'jane'
       });
     });
@@ -69,7 +69,7 @@ describe('taskUtils', () => {
       const customMoved = '2024-01-01T12:00:00Z';
       const taskData: Partial<Task> = {
         title: 'Custom Dates Task',
-        status: 'done',
+        column: 'done',
         dates: {
           created: customCreated,
           updated: customCreated,
@@ -81,7 +81,7 @@ describe('taskUtils', () => {
 
       expect(result.dates.created).toBe(customCreated);
       expect(result.dates.moved).toBe(customMoved);
-      expect(result.status).toBe('done');
+      expect(result.column).toBe('done');
     });
 
     it('should generate unique timestamps for created and updated fields', () => {

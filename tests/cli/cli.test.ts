@@ -72,7 +72,7 @@ metadata:
       return {
         stdout: error.stdout || '',
         stderr: error.stderr || error.message || '',
-        exitCode: error.status || 1
+        exitCode: error.column || 1
       };
     }
   };
@@ -113,7 +113,7 @@ metadata:
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Created task #1: New test task');
-      expect(result.stdout).toContain('Status: todo');
+      expect(result.stdout).toContain('Column: todo');
       
       // Verify task was actually created
       const board = loadBoard(path.join(tempDir, '.knbn'));
@@ -181,15 +181,15 @@ metadata:
       expect(board.tasks[1].title).toBe('Updated title');
     });
 
-    it('should update task status', () => {
-      const result = runCLI(['-f', 'test.knbn', 'update-task', '1', '--status', 'doing']);
+    it('should update task column', () => {
+      const result = runCLI(['-f', 'test.knbn', 'update-task', '1', '--column', 'doing']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Status: doing');
+      expect(result.stdout).toContain('Column: doing');
       
       // Verify update
       const board = loadBoard(path.join(tempDir, 'test.knbn'));
-      expect(board.tasks[1].status).toBe('doing');
+      expect(board.tasks[1].column).toBe('doing');
     });
 
     it('should update task assignee', () => {
@@ -217,22 +217,22 @@ metadata:
       const result = runCLI([
         '-f', 'test.knbn', 'update-task', '1',
         '--title', 'Multi-update task',
-        '--status', 'done',
+        '--column', 'done',
         '--assignee', 'jane'
       ]);
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Multi-update task');
-      expect(result.stdout).toContain('Status: done');
+      expect(result.stdout).toContain('Column: done');
       expect(result.stdout).toContain('Assignee: jane');
       
       // Verify updates
       const board = loadBoard(path.join(tempDir, 'test.knbn'));
       const task = board.tasks[1];
       expect(task.title).toBe('Multi-update task');
-      expect(task.status).toBe('done');
+      expect(task.column).toBe('done');
       expect(task.assignee).toBe('jane');
-      expect(task.dates.moved).toBeDefined(); // Should be set automatically when status changes
+      expect(task.dates.moved).toBeDefined(); // Should be set automatically when column changes
     });
 
     it('should fail with non-existent task ID', () => {

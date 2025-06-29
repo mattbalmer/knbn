@@ -3,6 +3,7 @@ export interface Task {
   title: string;
   description: string;
   column: string;
+  sprint?: string;
   labels?: string[];
   assignee?: string;
   storyPoints?: number;

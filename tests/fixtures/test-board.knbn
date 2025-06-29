@@ -12,7 +12,7 @@ tasks:
     id: 1
     title: "Test Task 1"
     description: "First test task"
-    status: "todo"
+    column: "todo"
     labels: ["test", "feature"]
     assignee: "tester"
     storyPoints: 3
@@ -23,7 +23,7 @@ tasks:
     id: 2
     title: "Test Task 2"
     description: "Second test task"
-    status: "done"
+    column: "done"
     dates:
       created: "2024-01-01T11:00:00Z"
       updated: "2024-01-01T12:00:00Z"

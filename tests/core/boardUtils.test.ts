@@ -92,7 +92,7 @@ tasks:
     id: 1
     title: "Test Task"
     description: "Test"
-    status: "todo"
+    column: "todo"
     dates:
       created: "2024-01-01T10:00:00Z"
       updated: "2024-01-01T10:00:00Z"
@@ -155,7 +155,7 @@ tasks:
   5:
     id: 5
     title: "Existing Task"
-    status: "todo"
+    column: "todo"
     dates:
       created: "2024-01-01T10:00:00Z"
       updated: "2024-01-01T10:00:00Z"
@@ -185,7 +185,7 @@ tasks:
             id: 1,
             title: 'Test Task',
             description: 'Test Description',
-            status: 'todo',
+            column: 'todo',
             dates: {
               created: '2024-01-01T10:00:00Z',
               updated: '2024-01-01T10:00:00Z'
@@ -260,7 +260,7 @@ tasks:
       expect(result.id).toBe(1);
       expect(result.title).toBe('New Task');
       expect(result.description).toBe('Task description');
-      expect(result.status).toBe('backlog'); // First column
+      expect(result.column).toBe('backlog'); // First column
       expect(result.assignee).toBe('john');
       expect(result.labels).toEqual(['feature']);
       expect(result.dates.created).toBeDefined();
@@ -275,7 +275,7 @@ tasks:
       expect(result.id).toBe(1);
       expect(result.title).toBe('Untitled Task');
       expect(result.description).toBe('');
-      expect(result.status).toBe('backlog');
+      expect(result.column).toBe('backlog');
       expect(result.dates.created).toBeDefined();
       expect(result.dates.updated).toBeDefined();
     });
@@ -289,10 +289,10 @@ tasks:
       expect(board.tasks[2].title).toBe('Task 2');
     });
 
-    it('should use specified status when provided', () => {
-      const result = addTaskToBoard(board, { title: 'Custom Status', status: 'done' });
+    it('should use specified column when provided', () => {
+      const result = addTaskToBoard(board, { title: 'Custom Column', column: 'done' });
       
-      expect(result.status).toBe('done');
+      expect(result.column).toBe('done');
     });
 
     it('should handle board with no columns gracefully', () => {
@@ -300,7 +300,7 @@ tasks:
       
       const result = addTaskToBoard(board, { title: 'No Columns Task' });
       
-      expect(result.status).toBe('todo'); // fallback default
+      expect(result.column).toBe('todo'); // fallback default
     });
   });
 
@@ -319,7 +319,7 @@ tasks:
             id: 1,
             title: 'Existing Task',
             description: 'Original description',
-            status: 'todo',
+            column: 'todo',
             assignee: 'alice',
             dates: {
               created: '2024-01-01T10:00:00Z',
@@ -350,7 +350,7 @@ tasks:
       expect(result!.title).toBe('Updated Task');
       expect(result!.description).toBe('New description');
       expect(result!.assignee).toBe('bob');
-      expect(result!.status).toBe('todo'); // unchanged
+      expect(result!.column).toBe('todo'); // unchanged
       expect(result!.dates.created).toBe('2024-01-01T10:00:00Z'); // unchanged
       expect(new Date(result!.dates.updated).getTime()).toBeGreaterThan(
         new Date('2024-01-01T10:00:00Z').getTime()
@@ -371,23 +371,23 @@ tasks:
       expect(result!.id).toBe(1); // Should remain 1, not 999
     });
 
-    it('should set moved timestamp when status changes', () => {
-      const result = updateTaskInBoard(board, 1, { status: 'done' });
+    it('should set moved timestamp when column changes', () => {
+      const result = updateTaskInBoard(board, 1, { column: 'done' });
       
-      expect(result!.status).toBe('done');
+      expect(result!.column).toBe('done');
       expect(result!.dates.moved).toBeDefined();
       expect(new Date(result!.dates.moved!).getTime()).toBeGreaterThan(0);
     });
 
-    it('should not set moved timestamp when status does not change', () => {
-      const result = updateTaskInBoard(board, 1, { title: 'New Title', status: 'todo' });
+    it('should not set moved timestamp when column does not change', () => {
+      const result = updateTaskInBoard(board, 1, { title: 'New Title', column: 'todo' });
       
       expect(result!.title).toBe('New Title');
-      expect(result!.status).toBe('todo');
+      expect(result!.column).toBe('todo');
       expect(result!.dates.moved).toBeUndefined();
     });
 
-    it('should preserve existing moved timestamp when status does not change', () => {
+    it('should preserve existing moved timestamp when column does not change', () => {
       const existingMoved = '2024-01-01T15:00:00Z';
       board.tasks[1].dates.moved = existingMoved;
       
@@ -400,17 +400,17 @@ tasks:
       const manualMoved = '2024-01-01T16:00:00Z';
       
       const result = updateTaskInBoard(board, 1, { 
-        status: 'done',
+        column: 'done',
         dates: { moved: manualMoved, created: '2024-01-01T10:00:00Z', updated: '2024-01-01T10:00:00Z' }
       });
       
       expect(result!.dates.moved).toBe(manualMoved);
     });
 
-    it('should set moved timestamp for any status change', () => {
-      const result = updateTaskInBoard(board, 1, { status: 'doing' });
+    it('should set moved timestamp for any column change', () => {
+      const result = updateTaskInBoard(board, 1, { column: 'doing' });
       
-      expect(result!.status).toBe('doing');
+      expect(result!.column).toBe('doing');
       expect(result!.dates.moved).toBeDefined();
       expect(new Date(result!.dates.moved!).getTime()).toBeGreaterThan(0);
     });
@@ -421,7 +421,7 @@ tasks:
       expect(result!.title).toBe('Just Title Change');
       expect(result!.description).toBe('Original description'); // unchanged
       expect(result!.assignee).toBe('alice'); // unchanged
-      expect(result!.status).toBe('todo'); // unchanged
+      expect(result!.column).toBe('todo'); // unchanged
     });
   });
 });
