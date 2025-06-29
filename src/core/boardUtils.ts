@@ -81,3 +81,31 @@ export function addTaskToBoard(board: Board, taskData: Partial<Task>): Task {
   
   return newTask;
 }
+
+export function updateTaskInBoard(board: Board, taskId: number, updates: Partial<Task>): Task | null {
+  const task = board.tasks[taskId];
+  if (!task) {
+    return null;
+  }
+
+  // Update the task with new values, keeping existing values for unspecified fields
+  const updatedTask: Task = {
+    ...task,
+    ...updates,
+    id: taskId, // Ensure ID doesn't change
+    updated: new Date().toISOString(),
+    // If status is being changed to a "done" status and completed isn't set, set it
+    completed: updates.status && isCompletedStatus(updates.status, board) && !task.completed 
+      ? new Date().toISOString() 
+      : updates.completed ?? task.completed
+  };
+
+  board.tasks[taskId] = updatedTask;
+  return updatedTask;
+}
+
+function isCompletedStatus(status: string, board: Board): boolean {
+  // Consider "done", "completed", "finished" as completed statuses
+  const completedStatuses = ['done', 'completed', 'finished'];
+  return completedStatuses.includes(status.toLowerCase());
+}
