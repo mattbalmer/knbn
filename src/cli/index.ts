@@ -3,10 +3,11 @@
 import { startServer } from '../server';
 import { findBoardFile, loadBoard, saveBoard, addTaskToBoard } from '../core/boardUtils';
 
-function parseArgs(): { port: number; command?: string; args: string[] } {
+function parseArgs(): { port: number; command?: string; args: string[]; boardFile?: string } {
   const args = process.argv.slice(2);
   let port = 9000; // default port
   let command: string | undefined;
+  let boardFile: string | undefined;
   const remainingArgs: string[] = [];
   
   for (let i = 0; i < args.length; i++) {
@@ -18,6 +19,9 @@ function parseArgs(): { port: number; command?: string; args: string[] } {
       }
       port = portArg;
       i++; // skip the port value
+    } else if ((args[i] === '-f' || args[i] === '--file') && i + 1 < args.length) {
+      boardFile = args[i + 1];
+      i++; // skip the file value
     } else if (args[i] === '--help' || args[i] === '-h') {
       command = 'help';
     } else if (!command && !args[i].startsWith('-')) {
@@ -27,11 +31,11 @@ function parseArgs(): { port: number; command?: string; args: string[] } {
     }
   }
   
-  return { port, command, args: remainingArgs };
+  return { port, command, args: remainingArgs, boardFile };
 }
 
-function createTask(args: string[]): void {
-  const boardFile = findBoardFile();
+function createTask(args: string[], providedBoardFile?: string): void {
+  const boardFile = providedBoardFile || findBoardFile();
   if (!boardFile) {
     console.error('No .knbn board file found in current directory');
     process.exit(1);
@@ -55,7 +59,7 @@ function createTask(args: string[]): void {
 }
 
 function main() {
-  const { port, command, args } = parseArgs();
+  const { port, command, args, boardFile } = parseArgs();
   
   // Default action is to start the web server
   if (!command) {
@@ -69,7 +73,7 @@ function main() {
       startServer(port);
       break;
     case 'create-task':
-      createTask(args);
+      createTask(args, boardFile);
       break;
     case 'help':
       console.log(`
@@ -83,13 +87,15 @@ Commands:
   help                Show this help message
 
 Options:
-  -p <port> Set the server port (default: 9000)
+  -p <port>           Set the server port (default: 9000)
+  -f, --file <path>   Specify a board file to use
 
 Examples:
-  knbn                           # Start server on port 9000
-  knbn -p 8080                   # Start server on port 8080
-  knbn server -p 3000            # Start server on port 3000
-  knbn create-task "Fix bug"     # Create a new task
+  knbn                                    # Start server on port 9000
+  knbn -p 8080                            # Start server on port 8080
+  knbn server -p 3000                     # Start server on port 3000
+  knbn create-task "Fix bug"              # Create a new task
+  knbn -f my-board.knbn create-task "Bug" # Create task in specific board
       `);
       break;
     default:
