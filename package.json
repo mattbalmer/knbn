@@ -2,14 +2,14 @@
   "name": "knbn",
   "version": "1.0.0",
   "description": "A simple kanban CLI tool",
-  "main": "dist/index.js",
+  "main": "dist/cli/index.js",
   "bin": {
-    "knbn": "dist/index.js"
+    "knbn": "dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts"
+    "start": "node dist/cli/index.js",
+    "dev": "ts-node src/cli/index.ts"
   },
   "keywords": ["kanban", "cli", "typescript"],
   "author": "",
