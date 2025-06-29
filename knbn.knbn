@@ -1,0 +1,28 @@
+configuration:
+  name: KnBn Project Board
+  description: Development board for the KnBn kanban CLI tool
+  columns:
+    - name: backlog
+    - name: todo
+    - name: working
+    - name: done
+tasks:
+  '1':
+    id: 1
+    title: Test task from CLI
+    description: ''
+    status: backlog
+    created: '2025-06-29T18:46:59.665Z'
+    updated: '2025-06-29T18:46:59.665Z'
+  '2':
+    id: 2
+    title: Another test task
+    description: ''
+    status: backlog
+    created: '2025-06-29T18:47:05.397Z'
+    updated: '2025-06-29T18:47:05.397Z'
+metadata:
+  nextId: 3
+  createdAt: '2025-06-29T00:00:00Z'
+  lastModified: '2025-06-29T18:47:05.397Z'
+  version: '1.0'
