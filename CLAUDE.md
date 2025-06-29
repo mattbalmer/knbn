@@ -44,4 +44,13 @@ yarn start
 
 ## Developer Notes
 - Use `yarn` over `npm` where possible
-- If in a feature branch (`feature/*`), git commit after every prompt. Include the user prompt and an appropriate summary of the changes.
+- If in a feature branch (`feature/*`), git commit after every prompt. The commit message should follow the format below. Do not modify the user prompt.
+  ```
+  Prompt:
+  <user_prompt>
+  
+  Summary:
+  <summary_of_changes>
+  ```
+- Use `claude-test.knbn` by default when testing. This is okay to modify without asking permission.
+- Never modify the file `.knbn` in this directory directly or without being prompted to. When prompter asks to modify ".knbn", use the CLI (npx knbn)
