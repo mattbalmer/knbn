@@ -1,3 +1,5 @@
+# This file includes features that are not yet implemented, such as sprintInfo, historical data, and calculated fields.
+
 configuration:
   name: "Team Sprint Board"
   description: "Sprint 23 - Q1 2024 deliverables"
