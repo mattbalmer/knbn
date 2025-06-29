@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 import { findBoardFile, loadBoard, saveBoard, addTaskToBoard, updateTaskInBoard } from '../core/boardUtils';
 
 function startWebServer(port: number): void {
-  console.log(`Starting knbn web server on port ${port}...`);
+  console.log(`Starting knbn-web server on port ${port}...`);
   
   const args = ['--port', port.toString()];
   const child = spawn('knbn-web', args, {
