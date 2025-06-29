@@ -47,6 +47,7 @@ export function loadBoard(filePath: string): Board {
         columns: data.configuration?.columns || defaultConfig.columns
       },
       tasks: data.tasks || {},
+      sprints: data.sprints || undefined,
       metadata: {
         nextId: data.metadata?.nextId || defaultMetadata.nextId,
         createdAt: data.metadata?.createdAt || defaultMetadata.createdAt,

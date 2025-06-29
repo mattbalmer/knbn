@@ -20,9 +20,13 @@ export interface Column {
 
 export interface Sprint {
   name: string;
-  startDate?: string;
-  endDate?: string;
-  goal?: string;
+  description?: string;
+  capacity?: number;
+  dates: {
+    created: string;
+    starts: string;
+    ends?: string;
+  };
 }
 
 export interface Board {
