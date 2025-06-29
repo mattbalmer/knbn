@@ -52,5 +52,5 @@ yarn start
   Summary:
   <summary_of_changes>
   ```
-- Use `claude-test.knbn` by default when testing.
-- Never modify `.knbn` directly or without being prompted to. When prompter asks to modify ".knbn", use the CLI (npx knbn)
+- Use `claude-test.knbn` by default when testing. This is okay to modify without asking permission.
+- Never modify the file `.knbn` in this directory directly or without being prompted to. When prompter asks to modify ".knbn", use the CLI (npx knbn)
