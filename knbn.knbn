@@ -1,0 +1,16 @@
+configuration:
+  name: "KnBn Project Board"
+  description: "Development board for the KnBn kanban CLI tool"
+  columns:
+    - "backlog"
+    - "todo"
+    - "working"
+    - "done"
+
+tasks:
+
+metadata:
+  nextId: 1
+  createdAt: "2025-06-29T00:00:00Z"
+  lastModified: "2025-06-29T00:00:00Z"
+  version: "1.0"
