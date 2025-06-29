@@ -1,8 +1,9 @@
 import { execSync, spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 import { loadBoard } from '../../src/core/boardUtils';
+// @ts-ignore
+import { createTempDir, rmTempDir } from '../test-utils';
 
 describe('CLI Integration Tests', () => {
   let tempDir: string;
@@ -21,7 +22,7 @@ describe('CLI Integration Tests', () => {
   });
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'knbn-cli-test-'));
+    tempDir = createTempDir('knbn-cli');
     originalCwd = process.cwd();
     process.chdir(tempDir);
     
@@ -48,7 +49,7 @@ metadata:
 
   afterEach(() => {
     process.chdir(originalCwd);
-    fs.rmSync(tempDir, { recursive: true, force: true });
+    rmTempDir('knbn-cli');
   });
 
   const runCLI = (args: string[]): { stdout: string; stderr: string; exitCode: number } => {

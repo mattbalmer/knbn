@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 import {
   findBoardFile,
   loadBoard,
@@ -9,6 +8,8 @@ import {
   updateTaskInBoard
 } from '../../src/core/boardUtils';
 import { Board, Task } from '../../src/core/types';
+// @ts-ignore
+import { createTempDir, rmTempDir } from '../test-utils';
 
 describe('boardUtils', () => {
   let tempDir: string;
@@ -16,7 +17,7 @@ describe('boardUtils', () => {
 
   beforeEach(() => {
     // Create a temporary directory for each test
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'knbn-test-'));
+    tempDir = createTempDir('knbn-core');
     originalCwd = process.cwd();
     process.chdir(tempDir);
   });
@@ -24,7 +25,7 @@ describe('boardUtils', () => {
   afterEach(() => {
     // Restore original working directory and cleanup
     process.chdir(originalCwd);
-    fs.rmSync(tempDir, { recursive: true, force: true });
+    rmTempDir('knbn-core');
   });
 
   describe('findBoardFile', () => {
