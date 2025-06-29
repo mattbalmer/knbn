@@ -13,11 +13,15 @@ export interface Task {
   };
 }
 
+export interface Column {
+  name: string;
+}
+
 export interface Board {
   configuration: {
     name: string;
     description: string;
-    columns: Array<{ name: string }>;
+    columns: Column[];
   };
   tasks: Record<number, Task>;
   metadata: {
