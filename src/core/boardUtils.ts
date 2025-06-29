@@ -81,7 +81,7 @@ export function addTaskToBoard(board: Board, taskData: Partial<Task>): Task {
     id: board.metadata.nextId,
     title: taskData.title || 'Untitled Task',
     description: taskData.description || '',
-    status: taskData.status || board.configuration.columns[0]?.name || 'todo',
+    column: taskData.column || board.configuration.columns[0]?.name || 'todo',
     labels: taskData.labels,
     assignee: taskData.assignee,
     storyPoints: taskData.storyPoints,
@@ -105,7 +105,7 @@ export function updateTaskInBoard(board: Board, taskId: number, updates: Partial
   }
 
   const now = new Date().toISOString();
-  const statusChanged = updates.status && updates.status !== task.status;
+  const columnChanged = updates.column && updates.column !== task.column;
 
   // Handle dates separately to avoid overwriting
   const { dates: updateDates, ...otherUpdates } = updates;
@@ -120,7 +120,7 @@ export function updateTaskInBoard(board: Board, taskId: number, updates: Partial
       updated: now,
       moved: updateDates?.moved !== undefined 
         ? updateDates.moved 
-        : (statusChanged ? now : task.dates.moved)
+        : (columnChanged ? now : task.dates.moved)
     }
   };
 

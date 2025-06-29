@@ -7,7 +7,7 @@ export function createTask(taskData: Partial<Task>, nextId: number): Task {
     id: nextId,
     title: taskData.title || 'Untitled Task',
     description: taskData.description || '',
-    status: taskData.status || 'todo',
+    column: taskData.column || 'todo',
     labels: taskData.labels,
     assignee: taskData.assignee,
     storyPoints: taskData.storyPoints,

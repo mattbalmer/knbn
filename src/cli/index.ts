@@ -74,7 +74,7 @@ function createTask(args: string[], providedBoardFile?: string): void {
     saveBoard(boardFile, board);
     
     console.log(`Created task #${newTask.id}: ${newTask.title}`);
-    console.log(`Status: ${newTask.status}`);
+    console.log(`Column: ${newTask.column}`);
   } catch (error) {
     console.error(`Failed to create task: ${error}`);
     process.exit(1);
@@ -89,7 +89,7 @@ function updateTask(args: string[], providedBoardFile?: string): void {
   }
 
   if (args.length < 1) {
-    console.error('Usage: knbn update-task <id> [--title "New Title"] [--status "new-status"] [--description "New description"] [--assignee "person"]');
+    console.error('Usage: knbn update-task <id> [--title "New Title"] [--column "new-column"] [--description "New description"] [--assignee "person"]');
     process.exit(1);
   }
 
@@ -108,8 +108,8 @@ function updateTask(args: string[], providedBoardFile?: string): void {
       if (args[i] === '--title' && i + 1 < args.length) {
         updates.title = args[i + 1];
         i++;
-      } else if (args[i] === '--status' && i + 1 < args.length) {
-        updates.status = args[i + 1];
+      } else if (args[i] === '--column' && i + 1 < args.length) {
+        updates.column = args[i + 1];
         i++;
       } else if (args[i] === '--description' && i + 1 < args.length) {
         updates.description = args[i + 1];
@@ -121,7 +121,7 @@ function updateTask(args: string[], providedBoardFile?: string): void {
     }
 
     if (Object.keys(updates).length === 0) {
-      console.error('No updates specified. Use --title, --status, --description, or --assignee');
+      console.error('No updates specified. Use --title, --column, --description, or --assignee');
       process.exit(1);
     }
 
@@ -134,7 +134,7 @@ function updateTask(args: string[], providedBoardFile?: string): void {
     saveBoard(boardFile, board);
     
     console.log(`Updated task #${updatedTask.id}: ${updatedTask.title}`);
-    console.log(`Status: ${updatedTask.status}`);
+    console.log(`Column: ${updatedTask.column}`);
     if (updatedTask.assignee) {
       console.log(`Assignee: ${updatedTask.assignee}`);
     }
@@ -182,7 +182,7 @@ Options:
 
 Update Task Options:
   --title <text>        Update the task title
-  --status <status>     Update the task status
+  --column <column>     Update the task column
   --description <text>  Update the task description
   --assignee <person>   Update the task assignee
 
@@ -191,7 +191,7 @@ Examples:
   knbn -p 8080                                # Start server on port 8080
   knbn server -p 3000                         # Start server on port 3000
   knbn create-task "Fix bug"                  # Create a new task
-  knbn update-task 1 --status "done"         # Mark task #1 as done
+  knbn update-task 1 --column "done"         # Mark task #1 as done
   knbn update-task 2 --title "New title"     # Update task #2 title
   knbn -f my-board.knbn create-task "Bug"    # Create task in specific board
       `);
