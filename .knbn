@@ -14,13 +14,13 @@ configuration:
 tasks:
   '1':
     id: 1
-    title: Task without specific board file
+    title: Remove CWD print
     description: ''
     status: backlog
-    created: '2025-06-29T18:51:01.664Z'
-    updated: '2025-06-29T18:51:01.664Z'
+    created: '2025-06-29T18:56:24.822Z'
+    updated: '2025-06-29T18:56:24.822Z'
 metadata:
   nextId: 2
   createdAt: '2025-06-29T00:00:00Z'
-  lastModified: '2025-06-29T18:51:01.664Z'
+  lastModified: '2025-06-29T18:56:24.822Z'
   version: '0.1'

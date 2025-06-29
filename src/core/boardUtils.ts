@@ -7,8 +7,8 @@ import { boardVersion } from '../../package.json';
 export function findBoardFile(): string | null {
   const cwd = process.cwd();
   const possibleFiles = [
-    path.join(cwd, 'knbn.knbn'),
     path.join(cwd, '.knbn'),
+    path.join(cwd, 'knbn.knbn'),
     ...fs.readdirSync(cwd).filter(file => file.endsWith('.knbn')).map(file => path.join(cwd, file))
   ];
 
