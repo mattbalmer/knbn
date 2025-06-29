@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "declarationDir": "dist/core",
+    "declarationDir": "dist/",
     "declarationMap": true,
     "sourceMap": true,
     "jsx": "react-jsx"

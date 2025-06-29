@@ -1,9 +1,14 @@
 {
   "name": "knbn",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "boardVersion": "0.1.0",
   "description": "A simple kanban CLI tool",
   "author": "Matthew Balmer <contact@mattbalmer.com>",
+  "exports": {
+    "./*": "./dist/core/*.js",
+    "./cli/*": "./dist/cli/*.js",
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist"
   ],
@@ -11,7 +16,6 @@
     "type": "git",
     "url": "https://github.com/mattbalmer/knbn"
   },
-  "main": "dist/cli/index.js",
   "bin": {
     "knbn": "dist/cli/index.js"
   },
