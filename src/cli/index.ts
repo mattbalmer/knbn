@@ -1,7 +1,30 @@
 #!/usr/bin/env node
 
-import { startServer } from '../server';
+import { spawn } from 'child_process';
 import { findBoardFile, loadBoard, saveBoard, addTaskToBoard, updateTaskInBoard } from '../core/boardUtils';
+
+function startWebServer(port: number): void {
+  console.log(`Starting knbn web server on port ${port}...`);
+  
+  const args = ['--port', port.toString()];
+  const child = spawn('knbn-web', args, {
+    stdio: 'inherit',
+    shell: true
+  });
+
+  child.on('error', (error) => {
+    console.error('Failed to start knbn-web server:', error.message);
+    console.error('Make sure knbn-web is installed and available in your PATH');
+    process.exit(1);
+  });
+
+  child.on('exit', (code) => {
+    if (code !== 0) {
+      console.error(`knbn-web server exited with code ${code}`);
+      process.exit(code || 1);
+    }
+  });
+}
 
 function parseArgs(): { port: number; command?: string; args: string[]; boardFile?: string } {
   const args = process.argv.slice(2);
@@ -126,14 +149,14 @@ function main() {
   
   // Default action is to start the web server
   if (!command) {
-    startServer(port);
+    startWebServer(port);
     return;
   }
   
   // Handle other commands here in the future
   switch (command) {
     case 'server':
-      startServer(port);
+      startWebServer(port);
       break;
     case 'create-task':
       createTask(args, boardFile);

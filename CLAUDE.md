@@ -4,17 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-KnBn is a TypeScript-based kanban CLI tool that runs as an Express web server. The project is in early development with a simple web interface that displays the current working directory.
+KnBn is a TypeScript-based kanban CLI tool for managing kanban boards from the command line. The web server functionality has been moved to a separate `knbn-web` package to keep this CLI lightweight.
 
 ## Architecture
 
-- **Entry Point**: `src/index.ts` - Main Express server file
+- **Entry Point**: `src/cli/index.ts` - Main CLI application
+- **Core Logic**: `src/core/` - Board and task management utilities
 - **Build Output**: `dist/` directory contains compiled JavaScript
 - **Configuration**: Standard TypeScript project with `tsconfig.json`
 
-The application structure is minimal:
-- Express server runs on port 9000
-- Single route `/` serves HTML showing current working directory
+The application structure:
+- CLI commands for task and board management
+- Integration with separate `knbn-web` server for web interface
+- Board data stored in `.knbn` files
 - Uses ES2020 target with CommonJS modules
 
 ## Development Commands
@@ -32,15 +34,17 @@ yarn start
 
 ## Key Files
 
-- `src/index.ts` - Main application entry point
+- `src/cli/index.ts` - Main CLI application entry point
+- `src/core/` - Core functionality for board and task management
 - `package.json` - Contains build scripts and dependencies
 - `tsconfig.json` - TypeScript configuration with strict mode enabled
 - `dist/` - Compiled output directory (auto-generated)
 
 ## Dependencies
 
-- **Runtime**: Express.js for web server
-- **Development**: TypeScript, ts-node, type definitions for Express and Node.js
+- **Runtime**: js-yaml for board file parsing
+- **Development**: TypeScript, ts-node, Jest for testing
+- **External**: `knbn-web` CLI for web server functionality (separate package)
 
 ## Developer Notes
 - Use `yarn` over `npm` where possible
