@@ -85,6 +85,7 @@ export function addTaskToBoard(board: Board, taskData: Partial<Task>): Task {
     column: taskData.column || board.configuration.columns[0]?.name || 'todo',
     labels: taskData.labels,
     assignee: taskData.assignee,
+    sprint: taskData.sprint,
     storyPoints: taskData.storyPoints,
     dates: {
       created: taskData.dates?.created || now,
