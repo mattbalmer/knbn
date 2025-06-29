@@ -232,7 +232,7 @@ metadata:
       expect(task.title).toBe('Multi-update task');
       expect(task.status).toBe('done');
       expect(task.assignee).toBe('jane');
-      expect(task.completed).toBeDefined(); // Should be set automatically
+      expect(task.dates.moved).toBeDefined(); // Should be set automatically when status changes
     });
 
     it('should fail with non-existent task ID', () => {

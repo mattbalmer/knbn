@@ -93,8 +93,9 @@ tasks:
     title: "Test Task"
     description: "Test"
     status: "todo"
-    created: "2024-01-01T10:00:00Z"
-    updated: "2024-01-01T10:00:00Z"
+    dates:
+      created: "2024-01-01T10:00:00Z"
+      updated: "2024-01-01T10:00:00Z"
 metadata:
   nextId: 2
   createdAt: "2024-01-01T09:00:00Z"
@@ -155,8 +156,9 @@ tasks:
     id: 5
     title: "Existing Task"
     status: "todo"
-    created: "2024-01-01T10:00:00Z"
-    updated: "2024-01-01T10:00:00Z"
+    dates:
+      created: "2024-01-01T10:00:00Z"
+      updated: "2024-01-01T10:00:00Z"
       `;
       const boardPath = path.join(tempDir, 'partial.knbn');
       fs.writeFileSync(boardPath, partialBoard);
@@ -184,8 +186,10 @@ tasks:
             title: 'Test Task',
             description: 'Test Description',
             status: 'todo',
-            created: '2024-01-01T10:00:00Z',
-            updated: '2024-01-01T10:00:00Z'
+            dates: {
+              created: '2024-01-01T10:00:00Z',
+              updated: '2024-01-01T10:00:00Z'
+            }
           }
         },
         metadata: {
@@ -259,6 +263,8 @@ tasks:
       expect(result.status).toBe('backlog'); // First column
       expect(result.assignee).toBe('john');
       expect(result.labels).toEqual(['feature']);
+      expect(result.dates.created).toBeDefined();
+      expect(result.dates.updated).toBeDefined();
       expect(board.tasks[1]).toBe(result);
       expect(board.metadata.nextId).toBe(2);
     });
@@ -270,8 +276,8 @@ tasks:
       expect(result.title).toBe('Untitled Task');
       expect(result.description).toBe('');
       expect(result.status).toBe('backlog');
-      expect(result.created).toBeDefined();
-      expect(result.updated).toBeDefined();
+      expect(result.dates.created).toBeDefined();
+      expect(result.dates.updated).toBeDefined();
     });
 
     it('should increment nextId correctly', () => {
@@ -315,8 +321,10 @@ tasks:
             description: 'Original description',
             status: 'todo',
             assignee: 'alice',
-            created: '2024-01-01T10:00:00Z',
-            updated: '2024-01-01T10:00:00Z'
+            dates: {
+              created: '2024-01-01T10:00:00Z',
+              updated: '2024-01-01T10:00:00Z'
+            }
           }
         },
         metadata: {
@@ -343,8 +351,8 @@ tasks:
       expect(result!.description).toBe('New description');
       expect(result!.assignee).toBe('bob');
       expect(result!.status).toBe('todo'); // unchanged
-      expect(result!.created).toBe('2024-01-01T10:00:00Z'); // unchanged
-      expect(new Date(result!.updated).getTime()).toBeGreaterThan(
+      expect(result!.dates.created).toBe('2024-01-01T10:00:00Z'); // unchanged
+      expect(new Date(result!.dates.updated).getTime()).toBeGreaterThan(
         new Date('2024-01-01T10:00:00Z').getTime()
       );
     });
@@ -363,50 +371,48 @@ tasks:
       expect(result!.id).toBe(1); // Should remain 1, not 999
     });
 
-    it('should set completed timestamp when status changes to done', () => {
+    it('should set moved timestamp when status changes', () => {
       const result = updateTaskInBoard(board, 1, { status: 'done' });
       
       expect(result!.status).toBe('done');
-      expect(result!.completed).toBeDefined();
-      expect(new Date(result!.completed!).getTime()).toBeGreaterThan(0);
+      expect(result!.dates.moved).toBeDefined();
+      expect(new Date(result!.dates.moved!).getTime()).toBeGreaterThan(0);
     });
 
-    it('should set completed timestamp for other completion statuses', () => {
-      const result1 = updateTaskInBoard(board, 1, { status: 'completed' });
-      expect(result1!.completed).toBeDefined();
+    it('should not set moved timestamp when status does not change', () => {
+      const result = updateTaskInBoard(board, 1, { title: 'New Title', status: 'todo' });
       
-      // Reset task
-      board.tasks[1].completed = undefined;
-      
-      const result2 = updateTaskInBoard(board, 1, { status: 'finished' });
-      expect(result2!.completed).toBeDefined();
+      expect(result!.title).toBe('New Title');
+      expect(result!.status).toBe('todo');
+      expect(result!.dates.moved).toBeUndefined();
     });
 
-    it('should not override existing completed timestamp', () => {
-      const existingCompleted = '2024-01-01T15:00:00Z';
-      board.tasks[1].completed = existingCompleted;
+    it('should preserve existing moved timestamp when status does not change', () => {
+      const existingMoved = '2024-01-01T15:00:00Z';
+      board.tasks[1].dates.moved = existingMoved;
       
-      const result = updateTaskInBoard(board, 1, { status: 'done' });
+      const result = updateTaskInBoard(board, 1, { title: 'Updated Title' });
       
-      expect(result!.completed).toBe(existingCompleted);
+      expect(result!.dates.moved).toBe(existingMoved);
     });
 
-    it('should allow manual completion timestamp override', () => {
-      const manualCompleted = '2024-01-01T16:00:00Z';
+    it('should allow manual moved timestamp override', () => {
+      const manualMoved = '2024-01-01T16:00:00Z';
       
       const result = updateTaskInBoard(board, 1, { 
-        status: 'done', 
-        completed: manualCompleted 
+        status: 'done',
+        dates: { moved: manualMoved, created: '2024-01-01T10:00:00Z', updated: '2024-01-01T10:00:00Z' }
       });
       
-      expect(result!.completed).toBe(manualCompleted);
+      expect(result!.dates.moved).toBe(manualMoved);
     });
 
-    it('should not set completed timestamp for non-completion statuses', () => {
+    it('should set moved timestamp for any status change', () => {
       const result = updateTaskInBoard(board, 1, { status: 'doing' });
       
       expect(result!.status).toBe('doing');
-      expect(result!.completed).toBeUndefined();
+      expect(result!.dates.moved).toBeDefined();
+      expect(new Date(result!.dates.moved!).getTime()).toBeGreaterThan(0);
     });
 
     it('should handle partial updates correctly', () => {
