@@ -1,0 +1,14 @@
+configuration:
+  name: "Empty Board"
+  description: "An empty test board"
+  columns:
+    - name: "todo"
+    - name: "done"
+
+tasks:
+
+metadata:
+  nextId: 1
+  createdAt: "2024-01-01T09:00:00Z"
+  lastModified: "2024-01-01T09:00:00Z"
+  version: "0.1.0"

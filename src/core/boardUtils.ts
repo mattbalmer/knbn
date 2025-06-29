@@ -27,18 +27,31 @@ export function loadBoard(filePath: string): Board {
     const data = yaml.load(content) as any;
     
     // Ensure the board has the correct structure
+    const defaultConfig = {
+      name: 'Default Board',
+      description: 'A kanban board',
+      columns: [{ name: 'todo' }, { name: 'done' }]
+    };
+    
+    const defaultMetadata = {
+      nextId: 1,
+      createdAt: new Date().toISOString(),
+      lastModified: new Date().toISOString(),
+      version: boardVersion,
+    };
+    
     const board: Board = {
-      configuration: data.configuration || {
-        name: 'Default Board',
-        description: 'A kanban board',
-        columns: [{ name: 'todo' }, { name: 'done' }]
+      configuration: {
+        name: data.configuration?.name || defaultConfig.name,
+        description: data.configuration?.description || defaultConfig.description,
+        columns: data.configuration?.columns || defaultConfig.columns
       },
       tasks: data.tasks || {},
-      metadata: data.metadata || {
-        nextId: 1,
-        createdAt: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-        version: boardVersion,
+      metadata: {
+        nextId: data.metadata?.nextId || defaultMetadata.nextId,
+        createdAt: data.metadata?.createdAt || defaultMetadata.createdAt,
+        lastModified: data.metadata?.lastModified || defaultMetadata.lastModified,
+        version: data.metadata?.version || defaultMetadata.version
       }
     };
     
@@ -94,10 +107,12 @@ export function updateTaskInBoard(board: Board, taskId: number, updates: Partial
     ...updates,
     id: taskId, // Ensure ID doesn't change
     updated: new Date().toISOString(),
-    // If status is being changed to a "done" status and completed isn't set, set it
-    completed: updates.status && isCompletedStatus(updates.status, board) && !task.completed 
-      ? new Date().toISOString() 
-      : updates.completed ?? task.completed
+    // Handle completion timestamp logic
+    completed: updates.completed !== undefined 
+      ? updates.completed 
+      : updates.status && isCompletedStatus(updates.status, board) && !task.completed 
+        ? new Date().toISOString() 
+        : task.completed
   };
 
   board.tasks[taskId] = updatedTask;
