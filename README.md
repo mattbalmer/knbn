@@ -1,21 +1,31 @@
 # KnBn
 
-A TypeScript-based kanban CLI tool for managing kanban boards from the command line.
+A TypeScript-based CLI for managing advanced TODOs, in a Kanban style, from the command line.
+
+_This is an early, work-in-progress version of the project. Use accepting risk of breaking changes._
 
 ## Usage
 
 For basic CLI usage, run via npx:
 
 ```bash
-npx knbn
+npx knbn -h
 ```
+
+_Note: currently the default command `knbn` tries to run `knbn-web` - you will need to specify commands explicitly until this is updated._
 
 ## Web Interface
 
-If you plan to use the web interface, install the separate web package:
+If you plan to use the web interface, install the separate `knbn-web` package:
 
 ```bash
 npm i -g knbn-web
+```
+
+Then run:
+
+```bash
+knbn-web init
 ```
 
 ## Features
@@ -23,17 +33,4 @@ npm i -g knbn-web
 - Command-line kanban board management
 - Task and board operations
 - Board data stored in `.knbn` files
-- Lightweight CLI with optional web interface
-
-## Development
-
-```bash
-# Build the project
-yarn build
-
-# Run in development
-yarn dev
-
-# Run compiled version
-yarn start
-```
+- Lightweight CLI with optional web interface (`knbn-web`)
