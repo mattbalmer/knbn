@@ -144,34 +144,14 @@ function updateTask(args: string[], providedBoardFile?: string): void {
   }
 }
 
-function main() {
-  const { port, command, args, boardFile } = parseArgs();
-  
-  // Default action is to start the web server
-  if (!command) {
-    startWebServer(port);
-    return;
-  }
-  
-  // Handle other commands here in the future
-  switch (command) {
-    case 'server':
-      startWebServer(port);
-      break;
-    case 'create-task':
-      createTask(args, boardFile);
-      break;
-    case 'update-task':
-      updateTask(args, boardFile);
-      break;
-    case 'help':
-      console.log(`
+function displayHelp(): void {
+  console.log(`
 KnBn - Kanban CLI Tool
 
 Usage: knbn [command] [options]
 
 Commands:
-  server                Start the web server (default)
+  serve                 Start the web server
   create-task <title>   Create a new task
   update-task <id>      Update an existing task
   help                  Show this help message
@@ -187,14 +167,37 @@ Update Task Options:
   --assignee <person>   Update the task assignee
 
 Examples:
-  knbn                                        # Start server on port 9000
-  knbn -p 8080                                # Start server on port 8080
-  knbn server -p 3000                         # Start server on port 3000
-  knbn create-task "Fix bug"                  # Create a new task
+  knbn serve                                 # Start server on port 9000
+  knbn serve -p 3000                         # Start server on port 3000
+  knbn create-task "Fix bug"                 # Create a new task
   knbn update-task 1 --column "done"         # Mark task #1 as done
   knbn update-task 2 --title "New title"     # Update task #2 title
   knbn -f my-board.knbn create-task "Bug"    # Create task in specific board
       `);
+}
+
+function main() {
+  const { port, command, args, boardFile } = parseArgs();
+  
+  // Default action is to start the web server
+  if (!command) {
+    displayHelp();
+    return;
+  }
+  
+  // Handle other commands here in the future
+  switch (command) {
+    case 'serve':
+      startWebServer(port);
+      break;
+    case 'create-task':
+      createTask(args, boardFile);
+      break;
+    case 'update-task':
+      updateTask(args, boardFile);
+      break;
+    case 'help':
+      displayHelp();
       break;
     default:
       console.error(`Unknown command: ${command}`);

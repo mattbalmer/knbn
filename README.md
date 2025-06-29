@@ -9,10 +9,8 @@ _This is an early, work-in-progress version of the project. Use accepting risk o
 For basic CLI usage, run via npx:
 
 ```bash
-npx knbn -h
+npx knbn
 ```
-
-_Note: currently the default command `knbn` tries to run `knbn-web` - you will need to specify commands explicitly until this is updated._
 
 ## Web Interface
 
@@ -22,10 +20,11 @@ If you plan to use the web interface, install the separate `knbn-web` package:
 npm i -g knbn-web
 ```
 
-Then run:
+Then use either `knbn-web` or `knbn serve` to start the web server.
+You can specify a custom port with the `-p` option:
 
 ```bash
-knbn-web init
+knbn-web -p 8080
 ```
 
 ## Features
@@ -33,4 +32,4 @@ knbn-web init
 - Command-line kanban board management
 - Task and board operations
 - Board data stored in `.knbn` files
-- Lightweight CLI with optional web interface (`knbn-web`)
+- Lightweight CLI with optional web interface (`knbn-web` or `knbn serve`)
