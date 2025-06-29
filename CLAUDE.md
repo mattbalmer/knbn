@@ -52,3 +52,4 @@ yarn start
   Summary:
   <summary_of_changes>
   ```
+- Use `claude-test.knbn` by default when testing.
