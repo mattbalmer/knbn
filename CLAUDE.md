@@ -47,8 +47,8 @@ yarn start
 - If in a feature branch (`feature/*`), git commit after every prompt. The commit message should follow the format below. Do not modify the user prompt.
   ```
   Prompt:
-    <user_prompt>
+  <user_prompt>
   
   Summary:
-    <summary_of_changes>
+  <summary_of_changes>
   ```
