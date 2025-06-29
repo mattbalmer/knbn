@@ -24,10 +24,10 @@ describe('taskUtils', () => {
         assignee: 'john',
         storyPoints: 5
       });
-      expect(result.created).toBeDefined();
-      expect(result.updated).toBeDefined();
-      expect(result.created).toBe(result.updated);
-      expect(result.completed).toBeUndefined();
+      expect(result.dates.created).toBeDefined();
+      expect(result.dates.updated).toBeDefined();
+      expect(result.dates.created).toBe(result.dates.updated);
+      expect(result.dates.moved).toBeUndefined();
     });
 
     it('should create a task with default values for missing data', () => {
@@ -39,12 +39,12 @@ describe('taskUtils', () => {
         description: '',
         status: 'todo'
       });
-      expect(result.created).toBeDefined();
-      expect(result.updated).toBeDefined();
+      expect(result.dates.created).toBeDefined();
+      expect(result.dates.updated).toBeDefined();
       expect(result.labels).toBeUndefined();
       expect(result.assignee).toBeUndefined();
       expect(result.storyPoints).toBeUndefined();
-      expect(result.completed).toBeUndefined();
+      expect(result.dates.moved).toBeUndefined();
     });
 
     it('should create a task with partial data', () => {
@@ -64,17 +64,23 @@ describe('taskUtils', () => {
       });
     });
 
-    it('should handle completed task creation', () => {
-      const completedTime = '2024-01-01T12:00:00Z';
+    it('should handle task creation with custom dates', () => {
+      const customCreated = '2024-01-01T10:00:00Z';
+      const customMoved = '2024-01-01T12:00:00Z';
       const taskData: Partial<Task> = {
-        title: 'Completed Task',
+        title: 'Custom Dates Task',
         status: 'done',
-        completed: completedTime
+        dates: {
+          created: customCreated,
+          updated: customCreated,
+          moved: customMoved
+        }
       };
 
       const result = createTask(taskData, 5);
 
-      expect(result.completed).toBe(completedTime);
+      expect(result.dates.created).toBe(customCreated);
+      expect(result.dates.moved).toBe(customMoved);
       expect(result.status).toBe('done');
     });
 
@@ -83,14 +89,14 @@ describe('taskUtils', () => {
       // Small delay to ensure different timestamps
       const result2 = createTask({ title: 'Task 2' }, 2);
 
-      expect(result1.created).toBeDefined();
-      expect(result1.updated).toBeDefined();
-      expect(result2.created).toBeDefined();
-      expect(result2.updated).toBeDefined();
+      expect(result1.dates.created).toBeDefined();
+      expect(result1.dates.updated).toBeDefined();
+      expect(result2.dates.created).toBeDefined();
+      expect(result2.dates.updated).toBeDefined();
       
       // Times should be ISO strings
-      expect(() => new Date(result1.created)).not.toThrow();
-      expect(() => new Date(result1.updated)).not.toThrow();
+      expect(() => new Date(result1.dates.created)).not.toThrow();
+      expect(() => new Date(result1.dates.updated)).not.toThrow();
     });
   });
 });

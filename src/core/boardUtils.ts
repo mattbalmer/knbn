@@ -76,6 +76,7 @@ export function saveBoard(filePath: string, board: Board): void {
 }
 
 export function addTaskToBoard(board: Board, taskData: Partial<Task>): Task {
+  const now = new Date().toISOString();
   const newTask: Task = {
     id: board.metadata.nextId,
     title: taskData.title || 'Untitled Task',
@@ -84,9 +85,11 @@ export function addTaskToBoard(board: Board, taskData: Partial<Task>): Task {
     labels: taskData.labels,
     assignee: taskData.assignee,
     storyPoints: taskData.storyPoints,
-    created: new Date().toISOString(),
-    updated: new Date().toISOString(),
-    completed: taskData.completed
+    dates: {
+      created: taskData.dates?.created || now,
+      updated: taskData.dates?.updated || now,
+      moved: taskData.dates?.moved
+    }
   };
 
   board.tasks[newTask.id] = newTask;
@@ -101,26 +104,26 @@ export function updateTaskInBoard(board: Board, taskId: number, updates: Partial
     return null;
   }
 
+  const now = new Date().toISOString();
+  const statusChanged = updates.status && updates.status !== task.status;
+
+  // Handle dates separately to avoid overwriting
+  const { dates: updateDates, ...otherUpdates } = updates;
+  
   // Update the task with new values, keeping existing values for unspecified fields
   const updatedTask: Task = {
     ...task,
-    ...updates,
+    ...otherUpdates,
     id: taskId, // Ensure ID doesn't change
-    updated: new Date().toISOString(),
-    // Handle completion timestamp logic
-    completed: updates.completed !== undefined 
-      ? updates.completed 
-      : updates.status && isCompletedStatus(updates.status, board) && !task.completed 
-        ? new Date().toISOString() 
-        : task.completed
+    dates: {
+      created: task.dates.created,
+      updated: now,
+      moved: updateDates?.moved !== undefined 
+        ? updateDates.moved 
+        : (statusChanged ? now : task.dates.moved)
+    }
   };
 
   board.tasks[taskId] = updatedTask;
   return updatedTask;
-}
-
-function isCompletedStatus(status: string, board: Board): boolean {
-  // Consider "done", "completed", "finished" as completed statuses
-  const completedStatuses = ['done', 'completed', 'finished'];
-  return completedStatuses.includes(status.toLowerCase());
 }

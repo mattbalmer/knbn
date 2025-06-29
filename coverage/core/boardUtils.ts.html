@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>42/42</span>
+                <span class='fraction'>44/44</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>34/34</span>
+                <span class='fraction'>37/37</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>41/41</span>
+                <span class='fraction'>43/43</span>
             </div>
         
             
@@ -188,7 +188,10 @@
 <a name='L123'></a><a href='#L123'>123</a>
 <a name='L124'></a><a href='#L124'>124</a>
 <a name='L125'></a><a href='#L125'>125</a>
-<a name='L126'></a><a href='#L126'>126</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -267,6 +270,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -286,33 +292,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">10x</span>
-<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9x</span>
-<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
@@ -391,6 +397,7 @@ export function saveBoard(filePath: string, board: Board): void {
 }
 &nbsp;
 export function addTaskToBoard(board: Board, taskData: Partial&lt;Task&gt;): Task {
+  const now = new Date().toISOString();
   const newTask: Task = {
     id: board.metadata.nextId,
     title: taskData.title || 'Untitled Task',
@@ -399,9 +406,11 @@ export function addTaskToBoard(board: Board, taskData: Partial&lt;Task&gt;): Tas
     labels: taskData.labels,
     assignee: taskData.assignee,
     storyPoints: taskData.storyPoints,
-    created: new Date().toISOString(),
-    updated: new Date().toISOString(),
-    completed: taskData.completed
+    dates: {
+      created: taskData.dates?.created || now,
+      updated: taskData.dates?.updated || now,
+      moved: taskData.dates?.moved
+    }
   };
 &nbsp;
   board.tasks[newTask.id] = newTask;
@@ -416,28 +425,28 @@ export function updateTaskInBoard(board: Board, taskId: number, updates: Partial
     return null;
   }
 &nbsp;
+  const now = new Date().toISOString();
+  const statusChanged = updates.status &amp;&amp; updates.status !== task.status;
+&nbsp;
+  // Handle dates separately to avoid overwriting
+  const { dates: updateDates, ...otherUpdates } = updates;
+  
   // Update the task with new values, keeping existing values for unspecified fields
   const updatedTask: Task = {
     ...task,
-    ...updates,
+    ...otherUpdates,
     id: taskId, // Ensure ID doesn't change
-    updated: new Date().toISOString(),
-    // Handle completion timestamp logic
-    completed: updates.completed !== undefined 
-      ? updates.completed 
-      : updates.status &amp;&amp; isCompletedStatus(updates.status, board) &amp;&amp; !task.completed 
-        ? new Date().toISOString() 
-        : task.completed
+    dates: {
+      created: task.dates.created,
+      updated: now,
+      moved: updateDates?.moved !== undefined 
+        ? updateDates.moved 
+        : (statusChanged ? now : task.dates.moved)
+    }
   };
 &nbsp;
   board.tasks[taskId] = updatedTask;
   return updatedTask;
-}
-&nbsp;
-function isCompletedStatus(status: string, board: Board): boolean {
-  // Consider "done", "completed", "finished" as completed statuses
-  const completedStatuses = ['done', 'completed', 'finished'];
-  return completedStatuses.includes(status.toLowerCase());
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -445,7 +454,7 @@ function isCompletedStatus(status: string, board: Board): boolean {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-29T19:22:44.952Z
+                at 2025-06-29T19:31:44.587Z
             </div>
         <script src="../prettify.js"></script>
         <script>

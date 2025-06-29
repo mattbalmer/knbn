@@ -11,8 +11,10 @@ export function createTask(taskData: Partial<Task>, nextId: number): Task {
     labels: taskData.labels,
     assignee: taskData.assignee,
     storyPoints: taskData.storyPoints,
-    created: now,
-    updated: now,
-    completed: taskData.completed
+    dates: {
+      created: taskData.dates?.created || now,
+      updated: taskData.dates?.updated || now,
+      moved: taskData.dates?.moved
+    }
   };
 }

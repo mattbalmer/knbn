@@ -16,16 +16,18 @@ tasks:
     labels: ["test", "feature"]
     assignee: "tester"
     storyPoints: 3
-    created: "2024-01-01T10:00:00Z"
-    updated: "2024-01-01T10:00:00Z"
+    dates:
+      created: "2024-01-01T10:00:00Z"
+      updated: "2024-01-01T10:00:00Z"
   2:
     id: 2
     title: "Test Task 2"
     description: "Second test task"
     status: "done"
-    created: "2024-01-01T11:00:00Z"
-    updated: "2024-01-01T12:00:00Z"
-    completed: "2024-01-01T12:00:00Z"
+    dates:
+      created: "2024-01-01T11:00:00Z"
+      updated: "2024-01-01T12:00:00Z"
+      moved: "2024-01-01T12:00:00Z"
 
 metadata:
   nextId: 3

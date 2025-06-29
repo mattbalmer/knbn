@@ -6,9 +6,11 @@ export interface Task {
   labels?: string[];
   assignee?: string;
   storyPoints?: number;
-  created: string;
-  updated: string;
-  completed?: string;
+  dates: {
+    created: string;
+    updated: string;
+    moved?: string;
+  };
 }
 
 export interface Board {
