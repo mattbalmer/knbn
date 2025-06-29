@@ -92,6 +92,9 @@ metadata:
   createdAt: "2024-01-15T00:00:00Z"
   lastModified: "2024-01-25T16:30:00Z"
   version: "2.1"
+
+calculated:
+  lastCalculated: "2024-01-25T16:30:00Z"
   totalTasks: 7
   taskCounts:
     backlog: 1
@@ -101,12 +104,17 @@ metadata:
     done: 1
   storyPointsTotal: 44
   storyPointsCompleted: 5
-  burndownData:
-    - date: "2024-01-22"
+
+historical:
+  - date: "2024-01-22"
+    burndown:
       remaining: 44
-    - date: "2024-01-23"
+  - date: "2024-01-23"
+    burndown:
       remaining: 39
-    - date: "2024-01-24"
+  - date: "2024-01-24"
+    burndown:
       remaining: 39
-    - date: "2024-01-25"
+  - date: "2024-01-25"
+    burndown:
       remaining: 39

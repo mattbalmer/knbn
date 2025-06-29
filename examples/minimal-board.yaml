@@ -25,7 +25,3 @@ metadata:
   createdAt: "2024-01-19T10:30:00Z"
   lastModified: "2024-01-20T12:00:00Z"
   version: "1.0"
-  totalTasks: 2
-  taskCounts:
-    todo: 1
-    done: 1

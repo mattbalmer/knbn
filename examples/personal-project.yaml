@@ -6,11 +6,6 @@ configuration:
     - "in-progress"
     - "review"
     - "done"
-  labels:
-    - "bug"
-    - "feature"
-    - "documentation"
-    - "urgent"
 
 tasks:
   1:
@@ -60,9 +55,3 @@ metadata:
   createdAt: "2024-01-15T10:00:00Z"
   lastModified: "2024-01-18T11:15:00Z"
   version: "1.0"
-  totalTasks: 5
-  taskCounts:
-    todo: 2
-    in-progress: 1
-    review: 1
-    done: 1
