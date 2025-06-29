@@ -2,10 +2,10 @@ configuration:
   name: "Personal Project Board"
   description: "My personal development tasks"
   columns:
-    - "todo"
-    - "in-progress"
-    - "review"
-    - "done"
+    - name: "todo"
+    - name: "in-progress"
+    - name: "review"
+    - name: "done"
 
 tasks:
   1:

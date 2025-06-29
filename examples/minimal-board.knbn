@@ -2,8 +2,8 @@ configuration:
   name: "Minimal Board"
   description: "A simple kanban board with basic setup"
   columns:
-    - "todo"
-    - "done"
+    - name: "todo"
+    - name: "done"
 
 tasks:
   1:
