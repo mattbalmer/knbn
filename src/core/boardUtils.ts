@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { Board, Task } from './types';
+import { boardVersion } from '../../package.json';
 
 export function findBoardFile(): string | null {
   const cwd = process.cwd();
@@ -37,7 +38,7 @@ export function loadBoard(filePath: string): Board {
         nextId: 1,
         createdAt: new Date().toISOString(),
         lastModified: new Date().toISOString(),
-        version: '1.0'
+        version: boardVersion,
       }
     };
     
