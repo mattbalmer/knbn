@@ -24,12 +24,6 @@ The application structure:
 ```bash
 # Build the project
 yarn build
-
-# Run in development (with ts-node)
-yarn dev
-
-# Run compiled version
-yarn start
 ```
 
 ## Key Files

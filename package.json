@@ -1,6 +1,6 @@
 {
   "name": "knbn",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "boardVersion": "0.1.0",
   "description": "A simple kanban CLI tool",
   "author": "Matthew Balmer <contact@mattbalmer.com>",
@@ -14,8 +14,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/cli/index.js",
-    "dev": "ts-node src/cli/index.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
