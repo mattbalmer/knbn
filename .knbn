@@ -16,9 +16,9 @@ tasks:
     id: 1
     title: Remove CWD print
     description: ''
-    status: backlog
+    status: done
     created: '2025-06-29T18:56:24.822Z'
-    updated: '2025-06-29T18:56:24.822Z'
+    updated: '2025-06-29T18:59:00.000Z'
 metadata:
   nextId: 2
   createdAt: '2025-06-29T00:00:00Z'
