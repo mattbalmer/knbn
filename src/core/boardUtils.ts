@@ -129,3 +129,44 @@ export function updateTaskInBoard(board: Board, taskId: number, updates: Partial
   board.tasks[taskId] = updatedTask;
   return updatedTask;
 }
+
+export function createBoard(name?: string): string {
+  const now = new Date().toISOString();
+  const fileName = name ? `${name}.knbn` : '.knbn';
+  const filePath = path.join(process.cwd(), fileName);
+  
+  if (fs.existsSync(filePath)) {
+    throw new Error(`Board file ${fileName} already exists`);
+  }
+
+  // TODO: Maybe remove the initial task
+  const board: Board = {
+    configuration: {
+      name: name || 'Your Board',
+      description: 'Your local kanban board',
+      columns: [{ name: 'backlog' }, { name: 'todo' }, { name: 'working' }, { name: 'done' }]
+    },
+    tasks: {
+      1: {
+        id: 1,
+        title: 'Create a .knbn!',
+        description: 'Create your .knbn file to start using KnBn',
+        column: 'done',
+        dates: {
+          created: now,
+          updated: now,
+          moved: now,
+        }
+      }
+    },
+    metadata: {
+      nextId: 2,
+      createdAt: now,
+      lastModified: now,
+      version: boardVersion
+    }
+  };
+  
+  saveBoard(filePath, board);
+  return filePath;
+}

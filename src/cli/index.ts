@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 import { spawn } from 'child_process';
-import { findBoardFile, loadBoard, saveBoard, addTaskToBoard, updateTaskInBoard } from '../core/boardUtils';
+import * as fs from 'fs';
+import * as readline from 'readline';
+import { findBoardFile, loadBoard, saveBoard, addTaskToBoard, updateTaskInBoard, createBoard } from '../core/boardUtils';
 
 function startWebServer(port: number): void {
   console.log(`Starting knbn-web server on port ${port}...`);
@@ -24,6 +26,55 @@ function startWebServer(port: number): void {
       process.exit(code || 1);
     }
   });
+}
+
+async function promptForBoardCreation(): Promise<string | undefined> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  try {
+    const shouldCreate = await new Promise<string>((resolve) => {
+      rl.question('Would you like to create a new board? (y/n): ', resolve);
+    });
+
+    if (shouldCreate.toLowerCase() === 'y' || shouldCreate.toLowerCase() === 'yes') {
+      const boardName = await new Promise<string>((resolve) => {
+        rl.question('Enter board name (optional, press Enter for default): ', resolve);
+      });
+
+      const name = boardName.trim() || undefined;
+      const filePath = createBoard(name);
+      const fileName = filePath.split('/').pop();
+      console.log(`Created board file: ${fileName}`);
+      return fileName;
+    } else {
+      console.log('Create a new board anytime with: knbn create-board [name]');
+    }
+  } catch (error) {
+    console.error(`Failed to create board: ${error}`);
+  } finally {
+    rl.close();
+  }
+}
+
+async function listBoardFiles(): Promise<void> {
+  const cwd = process.cwd();
+  const files = fs.readdirSync(cwd).filter(file => file.endsWith('.knbn'));
+  
+  if (files.length === 0) {
+    console.log('No .knbn board files found in current directory.');
+
+    await promptForBoardCreation();
+  } else {
+    console.log('Found .knbn board files:');
+    files.forEach(file => {
+      console.log(`  ${file}`);
+    });
+  }
+  
+  console.log('\nUse -h for help and available commands.');
 }
 
 function parseArgs(): { port: number; command?: string; args: string[]; boardFile?: string } {
@@ -57,11 +108,16 @@ function parseArgs(): { port: number; command?: string; args: string[]; boardFil
   return { port, command, args: remainingArgs, boardFile };
 }
 
-function createTask(args: string[], providedBoardFile?: string): void {
-  const boardFile = providedBoardFile || findBoardFile();
+async function createTask(args: string[], providedBoardFile?: string): Promise<void> {
+  let boardFile = providedBoardFile || findBoardFile();
   if (!boardFile) {
-    console.error('No .knbn board file found in current directory');
-    process.exit(1);
+    console.log('No .knbn board file found in current directory');
+    const createdFile = await promptForBoardCreation();
+    if (!createdFile) {
+      console.log('Cannot continue without a .knbn file');
+      process.exit(1);
+    }
+    boardFile = createdFile;
   }
 
   try {
@@ -81,11 +137,16 @@ function createTask(args: string[], providedBoardFile?: string): void {
   }
 }
 
-function updateTask(args: string[], providedBoardFile?: string): void {
-  const boardFile = providedBoardFile || findBoardFile();
+async function updateTask(args: string[], providedBoardFile?: string): Promise<void> {
+  let boardFile = providedBoardFile || findBoardFile();
   if (!boardFile) {
-    console.error('No .knbn board file found in current directory');
-    process.exit(1);
+    console.log('No .knbn board file found in current directory');
+    const createdFile = await promptForBoardCreation();
+    if (!createdFile) {
+      console.log('Cannot continue without a .knbn file');
+      process.exit(1);
+    }
+    boardFile = createdFile;
   }
 
   if (args.length < 1) {
@@ -144,6 +205,18 @@ function updateTask(args: string[], providedBoardFile?: string): void {
   }
 }
 
+function createBoardCommand(args: string[]): void {
+  try {
+    const name = args.length > 0 ? args[0] : undefined;
+    const filePath = createBoard(name);
+    const fileName = filePath.split('/').pop();
+    console.log(`Created board file: ${fileName}`);
+  } catch (error) {
+    console.error(`Failed to create board: ${error}`);
+    process.exit(1);
+  }
+}
+
 function displayHelp(): void {
   console.log(`
 KnBn - Kanban CLI Tool
@@ -152,6 +225,7 @@ Usage: knbn [command] [options]
 
 Commands:
   serve                 Start the web server
+  create-board [name]   Create a new board file
   create-task <title>   Create a new task
   update-task <id>      Update an existing task
   help                  Show this help message
@@ -169,6 +243,8 @@ Update Task Options:
 Examples:
   knbn serve                                 # Start server on port 9000
   knbn serve -p 3000                         # Start server on port 3000
+  knbn create-board                          # Create .knbn file in current directory
+  knbn create-board my-project               # Create my-project.knbn file
   knbn create-task "Fix bug"                 # Create a new task
   knbn update-task 1 --column "done"         # Mark task #1 as done
   knbn update-task 2 --title "New title"     # Update task #2 title
@@ -176,12 +252,12 @@ Examples:
       `);
 }
 
-function main() {
+async function main() {
   const { port, command, args, boardFile } = parseArgs();
   
-  // Default action is to start the web server
+  // Default action is to list board files
   if (!command) {
-    displayHelp();
+    await listBoardFiles();
     return;
   }
   
@@ -190,11 +266,14 @@ function main() {
     case 'serve':
       startWebServer(port);
       break;
+    case 'create-board':
+      createBoardCommand(args);
+      break;
     case 'create-task':
-      createTask(args, boardFile);
+      await createTask(args, boardFile);
       break;
     case 'update-task':
-      updateTask(args, boardFile);
+      await updateTask(args, boardFile);
       break;
     case 'help':
       displayHelp();
@@ -206,4 +285,7 @@ function main() {
   }
 }
 
-main();
+main().catch(error => {
+  console.error('Unexpected error:', error);
+  process.exit(1);
+});

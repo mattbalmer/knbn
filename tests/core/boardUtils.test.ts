@@ -5,7 +5,8 @@ import {
   loadBoard,
   saveBoard,
   addTaskToBoard,
-  updateTaskInBoard
+  updateTaskInBoard,
+  createBoard
 } from '../../src/core/boardUtils';
 import { Board, Task } from '../../src/core/types';
 // @ts-ignore
@@ -422,6 +423,97 @@ tasks:
       expect(result!.description).toBe('Original description'); // unchanged
       expect(result!.assignee).toBe('alice'); // unchanged
       expect(result!.column).toBe('todo'); // unchanged
+    });
+  });
+
+  describe('createBoard', () => {
+    it('should create a .knbn file when no name is provided', () => {
+      const filePath = createBoard();
+      
+      expect(filePath).toBe(path.join(process.cwd(), '.knbn'));
+      expect(fs.existsSync(filePath)).toBe(true);
+      
+      const board = loadBoard(filePath);
+      expect(board.configuration.name).toBe('Your Board');
+      expect(board.configuration.description).toBe('Your local kanban board');
+      expect(board.configuration.columns).toHaveLength(4);
+      expect(board.configuration.columns[0].name).toBe('backlog');
+      expect(board.configuration.columns[1].name).toBe('todo');
+      expect(board.configuration.columns[2].name).toBe('working');
+      expect(board.configuration.columns[3].name).toBe('done');
+      expect(board.metadata.nextId).toBe(2);
+      expect(board.tasks[1]).toBeDefined();
+      expect(board.tasks[1].title).toBe('Create a .knbn!');
+      expect(board.tasks[1].column).toBe('done');
+    });
+
+    it('should create a named board file when name is provided', () => {
+      const filePath = createBoard('my-project');
+      
+      expect(filePath).toBe(path.join(process.cwd(), 'my-project.knbn'));
+      expect(fs.existsSync(filePath)).toBe(true);
+      
+      const board = loadBoard(filePath);
+      expect(board.configuration.name).toBe('my-project');
+      expect(board.configuration.description).toBe('Your local kanban board');
+      expect(board.metadata.nextId).toBe(2);
+    });
+
+    it('should throw error if file already exists', () => {
+      const existingFile = path.join(tempDir, '.knbn');
+      fs.writeFileSync(existingFile, 'existing content');
+      
+      expect(() => createBoard()).toThrow('Board file .knbn already exists');
+    });
+
+    it('should throw error if named file already exists', () => {
+      const existingFile = path.join(tempDir, 'existing.knbn');
+      fs.writeFileSync(existingFile, 'existing content');
+      
+      expect(() => createBoard('existing')).toThrow('Board file existing.knbn already exists');
+    });
+
+    it('should create board with correct initial task structure', () => {
+      const filePath = createBoard('test-board');
+      const board = loadBoard(filePath);
+      
+      expect(board.tasks[1]).toEqual({
+        id: 1,
+        title: 'Create a .knbn!',
+        description: 'Create your .knbn file to start using KnBn',
+        column: 'done',
+        dates: {
+          created: expect.any(String),
+          updated: expect.any(String),
+          moved: expect.any(String)
+        }
+      });
+    });
+
+    it('should create board with correct metadata structure', () => {
+      const filePath = createBoard('metadata-test');
+      const board = loadBoard(filePath);
+      
+      expect(board.metadata).toEqual({
+        nextId: 2,
+        createdAt: expect.any(String),
+        lastModified: expect.any(String),
+        version: expect.any(String)
+      });
+      
+      // Verify timestamps are valid ISO strings
+      expect(() => new Date(board.metadata.createdAt)).not.toThrow();
+      expect(() => new Date(board.metadata.lastModified)).not.toThrow();
+    });
+
+    it('should handle special characters in board name', () => {
+      const filePath = createBoard('my-special_board');
+      
+      expect(filePath).toBe(path.join(process.cwd(), 'my-special_board.knbn'));
+      expect(fs.existsSync(filePath)).toBe(true);
+      
+      const board = loadBoard(filePath);
+      expect(board.configuration.name).toBe('my-special_board');
     });
   });
 });

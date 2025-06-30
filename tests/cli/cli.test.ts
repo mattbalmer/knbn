@@ -361,6 +361,132 @@ metadata:
     });
   });
 
+  describe('create-board command', () => {
+    beforeEach(() => {
+      // Remove default test board for these tests
+      fs.unlinkSync(path.join(tempDir, 'test.knbn'));
+    });
+
+    it('should create a .knbn file when no name is provided', () => {
+      const result = runCLI(['create-board']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created board file: .knbn');
+      
+      // Verify file was created
+      const boardPath = path.join(tempDir, '.knbn');
+      expect(fs.existsSync(boardPath)).toBe(true);
+      
+      // Verify board structure
+      const board = loadBoard(boardPath);
+      expect(board.configuration.name).toBe('Your Board');
+      expect(board.configuration.description).toBe('Your local kanban board');
+      expect(board.configuration.columns).toHaveLength(4);
+      expect(board.configuration.columns[0].name).toBe('backlog');
+      expect(board.configuration.columns[1].name).toBe('todo');
+      expect(board.configuration.columns[2].name).toBe('working');
+      expect(board.configuration.columns[3].name).toBe('done');
+      expect(board.metadata.nextId).toBe(2);
+      expect(board.tasks[1]).toBeDefined();
+      expect(board.tasks[1].title).toBe('Create a .knbn!');
+      expect(board.tasks[1].column).toBe('done');
+    });
+
+    it('should create a named board file when name is provided', () => {
+      const result = runCLI(['create-board', 'my-project']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created board file: my-project.knbn');
+      
+      // Verify file was created
+      const boardPath = path.join(tempDir, 'my-project.knbn');
+      expect(fs.existsSync(boardPath)).toBe(true);
+      
+      // Verify board structure
+      const board = loadBoard(boardPath);
+      expect(board.configuration.name).toBe('my-project');
+      expect(board.configuration.description).toBe('Your local kanban board');
+      expect(board.metadata.nextId).toBe(2);
+    });
+
+    it('should create board with multi-word name', () => {
+      const result = runCLI(['create-board', 'my-awesome-project']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created board file: my-awesome-project.knbn');
+      
+      // Verify file was created
+      const boardPath = path.join(tempDir, 'my-awesome-project.knbn');
+      expect(fs.existsSync(boardPath)).toBe(true);
+      
+      // Verify board name
+      const board = loadBoard(boardPath);
+      expect(board.configuration.name).toBe('my-awesome-project');
+    });
+
+    it('should fail when .knbn file already exists', () => {
+      // Create existing .knbn file
+      fs.writeFileSync(path.join(tempDir, '.knbn'), 'existing content');
+      
+      const result = runCLI(['create-board']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Board file .knbn already exists');
+    });
+
+    it('should fail when named board file already exists', () => {
+      // Create existing named file
+      fs.writeFileSync(path.join(tempDir, 'existing.knbn'), 'existing content');
+      
+      const result = runCLI(['create-board', 'existing']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Board file existing.knbn already exists');
+    });
+
+    it('should handle special characters in board name', () => {
+      const result = runCLI(['create-board', 'my-special_board']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created board file: my-special_board.knbn');
+      
+      // Verify file was created
+      const boardPath = path.join(tempDir, 'my-special_board.knbn');
+      expect(fs.existsSync(boardPath)).toBe(true);
+      
+      // Verify board name
+      const board = loadBoard(boardPath);
+      expect(board.configuration.name).toBe('my-special_board');
+    });
+
+    it('should create board that can be used for subsequent operations', () => {
+      // Create board
+      const createResult = runCLI(['create-board', 'test-board']);
+      expect(createResult.exitCode).toBe(0);
+      
+      // Use the created board to create a task
+      const taskResult = runCLI(['-f', 'test-board.knbn', 'create-task', 'First task']);
+      expect(taskResult.exitCode).toBe(0);
+      expect(taskResult.stdout).toContain('Created task #2: First task'); // Should be #2 since initial task is #1
+      
+      // Verify task was created
+      const board = loadBoard(path.join(tempDir, 'test-board.knbn'));
+      expect(board.tasks[2]).toBeDefined();
+      expect(board.tasks[2].title).toBe('First task');
+      expect(board.metadata.nextId).toBe(3);
+    });
+
+    it('should be included in help output', () => {
+      const result = runCLI(['help']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('create-board');
+      expect(result.stdout).toContain('Create a new board file');
+      expect(result.stdout).toContain('knbn create-board');
+      expect(result.stdout).toContain('knbn create-board my-project');
+    });
+  });
+
   describe('error handling', () => {
     it('should handle corrupted board file gracefully', () => {
       fs.writeFileSync(path.join(tempDir, 'corrupted.knbn'), 'invalid: yaml: [content');
