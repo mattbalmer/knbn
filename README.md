@@ -17,7 +17,10 @@ npx knbn
 If you plan to use the web interface, install the separate `knbn-web` package:
 
 ```bash
+npx knbn-web
+# or
 npm i -g knbn-web
+knbn-web 
 ```
 
 Then use either `knbn-web` or `knbn serve` to start the web server.

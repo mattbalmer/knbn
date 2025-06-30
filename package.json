@@ -1,6 +1,6 @@
 {
   "name": "knbn",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "boardVersion": "0.1.0",
   "description": "A simple kanban CLI tool",
   "author": "Matthew Balmer <contact@mattbalmer.com>",
