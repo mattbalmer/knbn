@@ -28,7 +28,12 @@ function startWebServer(port: number): void {
   });
 }
 
-async function promptForBoardCreation(): Promise<string | undefined> {
+async function promptForBoardCreation(args: string[]): Promise<string | undefined> {
+  if (args.includes('--no-prompt')) {
+    console.log('Skipping prompt for board creation, as per --no-prompt flag');
+    return undefined;
+  }
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -59,14 +64,14 @@ async function promptForBoardCreation(): Promise<string | undefined> {
   }
 }
 
-async function listBoardFiles(): Promise<void> {
+async function listBoardFiles(args: string[]): Promise<void> {
   const cwd = process.cwd();
   const files = fs.readdirSync(cwd).filter(file => file.endsWith('.knbn'));
   
   if (files.length === 0) {
     console.log('No .knbn board files found in current directory.');
 
-    await promptForBoardCreation();
+    await promptForBoardCreation(args);
   } else {
     console.log('Found .knbn board files:');
     files.forEach(file => {
@@ -100,11 +105,13 @@ function parseArgs(): { port: number; command?: string; args: string[]; boardFil
       command = 'help';
     } else if (!command && !args[i].startsWith('-')) {
       command = args[i];
+    } else if (!command && args[i].startsWith('-')) {
+      remainingArgs.push(args[i]);
     } else if (command) {
       remainingArgs.push(args[i]);
     }
   }
-  
+
   return { port, command, args: remainingArgs, boardFile };
 }
 
@@ -112,9 +119,9 @@ async function createTask(args: string[], providedBoardFile?: string): Promise<v
   let boardFile = providedBoardFile || findBoardFile();
   if (!boardFile) {
     console.log('No .knbn board file found in current directory');
-    const createdFile = await promptForBoardCreation();
+    const createdFile = await promptForBoardCreation(args);
     if (!createdFile) {
-      console.log('Cannot continue without a .knbn file');
+      console.error('Cannot continue without a .knbn file');
       process.exit(1);
     }
     boardFile = createdFile;
@@ -141,9 +148,9 @@ async function updateTask(args: string[], providedBoardFile?: string): Promise<v
   let boardFile = providedBoardFile || findBoardFile();
   if (!boardFile) {
     console.log('No .knbn board file found in current directory');
-    const createdFile = await promptForBoardCreation();
+    const createdFile = await promptForBoardCreation(args);
     if (!createdFile) {
-      console.log('Cannot continue without a .knbn file');
+      console.error('Cannot continue without a .knbn file');
       process.exit(1);
     }
     boardFile = createdFile;
@@ -257,7 +264,7 @@ async function main() {
   
   // Default action is to list board files
   if (!command) {
-    await listBoardFiles();
+    await listBoardFiles(args);
     return;
   }
   

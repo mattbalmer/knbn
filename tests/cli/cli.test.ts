@@ -150,10 +150,10 @@ metadata:
     it('should fail when no board file is found', () => {
       fs.unlinkSync(path.join(tempDir, 'test.knbn'));
       
-      const result = runCLI(['create-task', 'Task without board']);
+      const result = runCLI(['create-task', 'Task without board', '--no-prompt']);
       
       expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('No .knbn board file found');
+      expect(result.stderr).toContain('Cannot continue without a .knbn file');
     });
 
     it('should fail with non-existent specific board file', () => {
