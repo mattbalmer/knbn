@@ -4,13 +4,24 @@ import * as yaml from 'js-yaml';
 import { Board, Task } from './types';
 import { boardVersion } from '../../package.json';
 
-export function findBoardFile(): string | null {
+export function getBoardFiles(): string[] {
   const cwd = process.cwd();
   const possibleFiles = [
-    path.join(cwd, '.knbn'),
-    path.join(cwd, 'knbn.knbn'),
-    ...fs.readdirSync(cwd).filter(file => file.endsWith('.knbn')).map(file => path.join(cwd, file))
+    ...fs.readdirSync(cwd).filter(file => file.endsWith('.knbn'))
   ];
+
+  // If ".knbn" exists, it should be the first file
+  const orderedFiles = possibleFiles.sort((a, b) => {
+    if (a === '.knbn') return -1; // ".knbn" should come first
+    if (b === '.knbn') return 1;
+    return 0;
+  });
+
+  return orderedFiles.map(file => path.join(cwd, file));
+}
+
+export function findBoardFile(): string | null {
+  const possibleFiles = getBoardFiles();
 
   for (const file of possibleFiles) {
     if (fs.existsSync(file)) {
@@ -56,6 +67,22 @@ export function loadBoard(filePath: string): Board {
       }
     };
     
+    return board;
+  } catch (error) {
+    throw new Error(`Failed to load board file: ${error}`);
+  }
+}
+
+export function loadBoardMetaAndConfig(filePath: string): Pick<Board, 'metadata' | 'configuration'> {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    const data = yaml.load(content) as any;
+
+    const board: Pick<Board, 'metadata' | 'configuration'> = {
+      configuration: data.configuration,
+      metadata: data.metadata,
+    };
+
     return board;
   } catch (error) {
     throw new Error(`Failed to load board file: ${error}`);
