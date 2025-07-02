@@ -3,7 +3,8 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as readline from 'readline';
-import { findBoardFile, loadBoard, saveBoard, addTaskToBoard, updateTaskInBoard, createBoard } from '../core/boardUtils';
+import { findBoardFiles, loadBoard, saveBoard, createBoard } from '../core/actions/board';
+import { createTaskOnBoard, updateTaskOnBoard } from '../core/utils/board';
 
 function startWebServer(port: number): void {
   console.log(`Starting knbn-web server on port ${port}...`);
@@ -49,9 +50,10 @@ async function promptForBoardCreation(args: string[]): Promise<string | undefine
         rl.question('Enter board name (optional, press Enter for default): ', resolve);
       });
 
-      const name = boardName.trim() || undefined;
-      const filePath = createBoard(name);
-      const fileName = filePath.split('/').pop();
+      const name = boardName.trim() || 'My Board';
+      const filePath = `${name.toLowerCase().replace(/\s+/g, '-')}.knbn`;
+      createBoard(filePath, { name });
+      const fileName = filePath;
       console.log(`Created board file: ${fileName}`);
       return fileName;
     } else {
@@ -116,7 +118,7 @@ function parseArgs(): { port: number; command?: string; args: string[]; boardFil
 }
 
 async function createTask(args: string[], providedBoardFile?: string): Promise<void> {
-  let boardFile = providedBoardFile || findBoardFile();
+  let boardFile = providedBoardFile || findBoardFiles(process.cwd())[0];
   if (!boardFile) {
     console.log('No .knbn board file found in current directory');
     const createdFile = await promptForBoardCreation(args);
@@ -133,11 +135,16 @@ async function createTask(args: string[], providedBoardFile?: string): Promise<v
     // Parse task arguments
     const title = args.join(' ') || 'New Task';
     
-    const newTask = addTaskToBoard(board, { title });
-    saveBoard(boardFile, board);
+    const updatedBoard = createTaskOnBoard(board, { title });
+    saveBoard(boardFile, updatedBoard);
     
-    console.log(`Created task #${newTask.id}: ${newTask.title}`);
-    console.log(`Column: ${newTask.column}`);
+    const createdTask = Object.values(updatedBoard.tasks).find(task => 
+      Object.values(board.tasks).find(oldTask => oldTask.id === task.id) === undefined
+    );
+    if (createdTask) {
+      console.log(`Created task #${createdTask.id}: ${createdTask.title}`);
+      console.log(`Column: ${createdTask.column}`);
+    }
   } catch (error) {
     console.error(`Failed to create task: ${error}`);
     process.exit(1);
@@ -145,7 +152,7 @@ async function createTask(args: string[], providedBoardFile?: string): Promise<v
 }
 
 async function updateTask(args: string[], providedBoardFile?: string): Promise<void> {
-  let boardFile = providedBoardFile || findBoardFile();
+  let boardFile = providedBoardFile || findBoardFiles(process.cwd())[0];
   if (!boardFile) {
     console.log('No .knbn board file found in current directory');
     const createdFile = await promptForBoardCreation(args);
@@ -193,19 +200,17 @@ async function updateTask(args: string[], providedBoardFile?: string): Promise<v
       process.exit(1);
     }
 
-    const updatedTask = updateTaskInBoard(board, taskId, updates);
+    const updatedBoard = updateTaskOnBoard(board, taskId, updates);
+    const updatedTask = updatedBoard.tasks[taskId];
     if (!updatedTask) {
       console.error(`Task #${taskId} not found`);
       process.exit(1);
     }
 
-    saveBoard(boardFile, board);
+    saveBoard(boardFile, updatedBoard);
     
     console.log(`Updated task #${updatedTask.id}: ${updatedTask.title}`);
     console.log(`Column: ${updatedTask.column}`);
-    if (updatedTask.assignee) {
-      console.log(`Assignee: ${updatedTask.assignee}`);
-    }
   } catch (error) {
     console.error(`Failed to update task: ${error}`);
     process.exit(1);
@@ -214,9 +219,10 @@ async function updateTask(args: string[], providedBoardFile?: string): Promise<v
 
 function createBoardCommand(args: string[]): void {
   try {
-    const name = args.length > 0 ? args[0] : undefined;
-    const filePath = createBoard(name);
-    const fileName = filePath.split('/').pop();
+    const name = args.length > 0 ? args[0] : 'My Board';
+    const filePath = `${name.toLowerCase().replace(/\s+/g, '-')}.knbn`;
+    createBoard(filePath, { name });
+    const fileName = filePath;
     console.log(`Created board file: ${fileName}`);
   } catch (error) {
     console.error(`Failed to create board: ${error}`);
