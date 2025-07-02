@@ -31,11 +31,6 @@ export const findDefaultColumn = (board: Board): Column | undefined => {
   return board.columns[0];
 }
 
-export const getBoardFileName = (filePath: string): string => {
-  const fileName = filePath.split('/').pop() || '';
-  return fileName.replace(/\.knbn$/, '');
-}
-
 /**
  * This function is here instead of ./task.ts because it modifies the board metadata too
  */

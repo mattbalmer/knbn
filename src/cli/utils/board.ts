@@ -1,8 +1,10 @@
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { findBoardFiles, createBoard } from '../../core/actions/board';
+import { ensureAbsolutePath, getFilenameFromBoardName, getFilepathForBoardFile, pcwd } from '../../core/utils/files';
+import { Filepath } from '../../core/types';
 
-export async function promptForBoardCreation(noPrompt: boolean = false): Promise<string | undefined> {
+export async function promptForBoardCreation(noPrompt: boolean = false): Promise<Filepath<'abs'> | undefined> {
   if (noPrompt) {
     console.log('Skipping prompt for board creation, as per --no-prompt flag');
     return undefined;
@@ -24,11 +26,11 @@ export async function promptForBoardCreation(noPrompt: boolean = false): Promise
       });
 
       const name = boardName.trim() || 'My Board';
-      const filePath = `${name.toLowerCase().replace(/\s+/g, '-')}.knbn`;
+      const filePath = getFilepathForBoardFile(name);
       createBoard(filePath, { name });
-      const fileName = filePath;
+      const fileName = getFilenameFromBoardName(filePath);
       console.log(`Created board file: ${fileName}`);
-      return fileName;
+      return filePath;
     } else {
       console.log('Create a new board anytime with: knbn create-board [name]');
     }
@@ -56,8 +58,8 @@ export async function listBoardFiles(noPrompt: boolean = false): Promise<void> {
   console.log('\nUse -h for help and available commands.');
 }
 
-export async function ensureBoardFile(providedFile?: string, noPrompt: boolean = false): Promise<string> {
-  let boardFile = providedFile || findBoardFiles(process.cwd())[0];
+export async function ensureBoardFile(providedFile?: string, noPrompt: boolean = false): Promise<Filepath<'abs'>> {
+  let boardFile = providedFile ? ensureAbsolutePath(providedFile) : findBoardFiles(pcwd())[0];
   if (!boardFile) {
     console.log('No .knbn board file found in current directory');
     const createdFile = await promptForBoardCreation(noPrompt);

@@ -1,11 +1,13 @@
 import * as boardUtils from '../utils/board';
 import { Board } from '../types/knbn';
 import fs from 'fs';
-import * as yaml from 'js-yaml';
 import path from 'path';
-import { getNow } from '../utils/misc';
+import { extractFilenameFromPath } from '../utils/files';
+import { Dirpath, Filepath } from '../types';
+import { Brands } from '../utils/ts';
+import { saveBoard } from '../utils/board-files';
 
-export const findBoardFiles = (dirPath: string): string[] => {
+export const findBoardFiles = (dirPath: Dirpath<'abs'>): Filepath<'abs'>[] => {
   const possibleFiles = [
     ...fs.readdirSync(dirPath).filter(file => file.endsWith('.knbn'))
   ];
@@ -17,15 +19,15 @@ export const findBoardFiles = (dirPath: string): string[] => {
     return 0;
   });
 
-  return orderedFiles.map(file => path.join(dirPath, file));
+  return orderedFiles.map(file => Brands.Filepath(path.join(dirPath, file)));
 }
 
-export const createBoard = (filePath: string, boardData: boardUtils.CreateBoardParams): Board => {
+export const createBoard = (filePath: Filepath<'abs'>, boardData: boardUtils.CreateBoardParams): Board => {
   // First prepare the file
   if (fs.existsSync(filePath)) {
     throw new Error(`Board file ${filePath} already exists`);
   }
-  const fileName = boardUtils.getBoardFileName(filePath);
+  const fileName = extractFilenameFromPath(filePath, { ext: false });
 
   // Then create the board
   const board = boardUtils.createBoard({
@@ -44,76 +46,4 @@ export const createBoard = (filePath: string, boardData: boardUtils.CreateBoardP
 
   saveBoard(filePath, board);
   return board;
-}
-
-export const saveBoard = (filePath: string, board: Board): void => {
-  // TODO: validate board and path
-
-  const updatedBoard: Board = {
-    ...board,
-    dates: {
-      ...board.dates,
-      saved: getNow(),
-    },
-  };
-
-  try {
-    const content = yaml.dump(updatedBoard, {
-      indent: 2,
-      lineWidth: -1,
-      noRefs: true
-    });
-    fs.writeFileSync(filePath, content, 'utf8');
-  } catch (error) {
-    throw new Error(`Failed to save board file: ${error}`);
-  }
-}
-
-export const loadBoard = (filePath: string): Board => {
-  // TODO: validate board and path
-
-  try {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const data = yaml.load(content) as Board;
-
-    if (!data || typeof data !== 'object') {
-      throw new Error('Invalid board file format');
-    }
-
-    return {
-      name: data.name,
-      description: data.description,
-      columns: data.columns,
-      labels: data.labels,
-      tasks: data.tasks || {},
-      sprints: data.sprints,
-      dates: data.dates,
-      metadata: data.metadata,
-    };
-  } catch (error) {
-    throw new Error(`Failed to load board file: ${error}`);
-  }
-}
-
-/**
- * Loads specific fields from a board file.
- *
- * The idea here is that - in the future, you can skip full validation steps (which are not yet implemented)
- */
-export const loadBoardFields = <K extends keyof Board>(filePath: string, keys: K[]): Pick<Board, K> => {
-  try {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const data = yaml.load(content) as Board;
-
-    const board: Pick<Board, K> = Object.entries(data)
-      .filter(([key]) => keys.includes(key as K))
-      .reduce((obj, [key, value]) => {
-        (obj as any)[key] = value;
-        return obj;
-      }, {} as Pick<Board, K>);
-
-    return board;
-  } catch (error) {
-    throw new Error(`Failed to load board file: ${error}`);
-  }
 }

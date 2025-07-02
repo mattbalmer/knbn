@@ -1,15 +1,15 @@
-import { Board, Task } from '../types';
+import { Board, Filepath, Task } from '../types';
 import { newTask } from '../utils/board';
 import { CreateTaskParams, updateTask as updateTaskUtil, sortTasks } from '../utils/task';
-import { loadBoard, saveBoard } from './board';
+import { loadBoard, saveBoard } from '../utils/board-files';
 
-export const getTask = (filepath: string, taskId: number): Task | undefined => {
+export const getTask = (filepath: Filepath, taskId: number): Task | undefined => {
   const board = loadBoard(filepath);
   return board.tasks[taskId];
 }
 
 // TODO: more advanced search capabilities (eg. ands, ors, regex)
-export const findTasks = (filepath: string, query: string, keys?: string[]): Task[] => {
+export const findTasks = (filepath: Filepath, query: string, keys?: string[]): Task[] => {
   const board = loadBoard(filepath);
   const lowerQuery = query.toLowerCase();
 
@@ -37,7 +37,7 @@ export const findTasks = (filepath: string, query: string, keys?: string[]): Tas
     .filter(task => callback(task)));
 }
 
-export const createTask = (filepath: string, taskData: Omit<CreateTaskParams, 'id'>): {
+export const createTask = (filepath: Filepath, taskData: Omit<CreateTaskParams, 'id'>): {
   board: Board,
   task: Task,
 } => {
@@ -53,7 +53,7 @@ export const createTask = (filepath: string, taskData: Omit<CreateTaskParams, 'i
   };
 }
 
-export const updateTask = (filepath: string, taskId: number, updates: Partial<Task>): Board => {
+export const updateTask = (filepath: Filepath, taskId: number, updates: Partial<Task>): Board => {
   const board = loadBoard(filepath);
   const updatedBoard = updateTaskUtil(board, taskId, updates);
   saveBoard(filepath, updatedBoard);

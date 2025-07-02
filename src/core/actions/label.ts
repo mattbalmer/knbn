@@ -1,36 +1,36 @@
 import * as labelUtils from '../utils/label';
-import * as boardActions from './board';
 import { Label, Board } from '../types/knbn';
-import { getNow } from '../utils/misc';
+import { Filepath } from '../types';
+import { loadBoard, saveBoard } from '../utils/board-files';
 
-export const addLabel = (filePath: string, labelData: labelUtils.CreateLabelParams): Board => {
-  const board = boardActions.loadBoard(filePath);
+export const addLabel = (filepath: Filepath, labelData: labelUtils.CreateLabelParams): Board => {
+  const board = loadBoard(filepath);
   const label = labelUtils.createLabel(labelData);
   const updatedBoard = labelUtils.addLabelToBoard(board, label);
-  boardActions.saveBoard(filePath, updatedBoard);
+  saveBoard(filepath, updatedBoard);
   return updatedBoard;
 }
 
-export const updateLabel = (filePath: string, labelName: string, updates: Partial<Label>): Board => {
-  const board = boardActions.loadBoard(filePath);
+export const updateLabel = (filepath: Filepath, labelName: string, updates: Partial<Label>): Board => {
+  const board = loadBoard(filepath);
   const updatedBoard = labelUtils.updateLabelOnBoard(board, labelName, updates);
-  boardActions.saveBoard(filePath, updatedBoard);
+  saveBoard(filepath, updatedBoard);
   return updatedBoard;
 }
 
-export const removeLabel = (filePath: string, labelName: string): Board => {
-  const board = boardActions.loadBoard(filePath);
+export const removeLabel = (filepath: Filepath, labelName: string): Board => {
+  const board = loadBoard(filepath);
   const updatedBoard = labelUtils.removeLabelFromBoard(board, labelName);
-  boardActions.saveBoard(filePath, updatedBoard);
+  saveBoard(filepath, updatedBoard);
   return updatedBoard;
 }
 
-export const listLabels = (filePath: string): Label[] => {
-  const board = boardActions.loadBoard(filePath);
+export const listLabels = (filepath: Filepath): Label[] => {
+  const board = loadBoard(filepath);
   return board.labels || [];
 }
 
-export const getLabel = (filePath: string, labelName: string): Label | undefined => {
-  const board = boardActions.loadBoard(filePath);
+export const getLabel = (filepath: Filepath, labelName: string): Label | undefined => {
+  const board = loadBoard(filepath);
   return labelUtils.getLabelByName(board, labelName);
 }

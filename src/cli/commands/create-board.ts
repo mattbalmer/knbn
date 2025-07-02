@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { createBoard } from '../../core/actions/board';
+import { getFilenameFromBoardName, getFilepathForBoardFile } from '../../core/utils/files';
 
 export const attachCreateBoard = (program: Command) =>
   program
@@ -8,9 +9,9 @@ export const attachCreateBoard = (program: Command) =>
     .action((name) => {
       try {
         const boardName = name || 'My Board';
-        const filePath = `${boardName.toLowerCase().replace(/\s+/g, '-')}.knbn`;
+        const filePath = getFilepathForBoardFile(getFilenameFromBoardName(boardName));
         createBoard(filePath, { name: boardName });
-        const fileName = filePath;
+        const fileName = getFilepathForBoardFile(filePath);
         console.log(`Created board file: ${fileName}`);
       } catch (error) {
         console.error(`Failed to create board: ${error}`);

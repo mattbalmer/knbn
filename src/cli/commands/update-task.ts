@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import * as TaskActions from '../../core/actions/task';
 import { ensureBoardFile } from '../utils/board';
+import { Task } from '../../core/types';
 
 export const attachUpdateTask = (program: Command) =>
   program
@@ -11,9 +12,8 @@ export const attachUpdateTask = (program: Command) =>
     .option('--column <column>', 'Update the task column')
     .option('--description <text>', 'Update the task description')
     .option('--priority <number>', 'Update the task priority')
-    .option('--no-prompt', 'Skip prompts for board creation')
     .action(async (taskId, options) => {
-      const boardFile = await ensureBoardFile(options.file, options['no-prompt']);
+      const boardFile = await ensureBoardFile(options.file, true);
 
       const id = parseInt(taskId, 10);
       if (isNaN(id)) {
@@ -22,7 +22,7 @@ export const attachUpdateTask = (program: Command) =>
       }
 
       try {
-        const updates: Partial<any> = {};
+        const updates: Partial<Task> = {};
         if (options.title) updates.title = options.title;
         if (options.column) updates.column = options.column;
         if (options.description) updates.description = options.description;

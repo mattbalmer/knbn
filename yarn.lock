@@ -2699,6 +2699,7 @@ __metadata:
     commander: "npm:^14.0.0"
     jest: "npm:^30.0.3"
     js-yaml: "npm:^4.1.0"
+    ts-brand: "npm:^0.2.0"
     ts-jest: "npm:^29.4.0"
     ts-node: "npm:^10.9.1"
     typescript: "npm:^5.1.6"
@@ -3527,6 +3528,13 @@ __metadata:
   dependencies:
     is-number: "npm:^7.0.0"
   checksum: 10c0/487988b0a19c654ff3e1961b87f471702e708fa8a8dd02a298ef16da7206692e8552a0250e8b3e8759270f62e9d8314616f6da274734d3b558b1fc7b7724e892
+  languageName: node
+  linkType: hard
+
+"ts-brand@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "ts-brand@npm:0.2.0"
+  checksum: 10c0/f568af7c613ab24c0e8e362959c9df249e37477b63a143785e8ea378b6c6a2fcfad1ff286af874f02a1692f18157fb289e5fc6ae3a4b069a253eaf4fc5b4ed6d
   languageName: node
   linkType: hard
 

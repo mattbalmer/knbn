@@ -1,10 +1,11 @@
 import * as sprintUtils from '../utils/sprint';
-import * as boardActions from './board';
 import { Sprint, Board } from '../types/knbn';
 import { getNow } from '../utils/misc';
+import { loadBoard, saveBoard } from '../utils/board-files';
+import { Filepath } from '../types';
 
-export const addSprint = (filePath: string, sprintData: sprintUtils.CreateSprintParams): Sprint => {
-  const board = boardActions.loadBoard(filePath);
+export const addSprint = (filepath: Filepath, sprintData: sprintUtils.CreateSprintParams): Sprint => {
+  const board = loadBoard(filepath);
   const sprint = sprintUtils.createSprint(sprintData);
   const updatedBoard = sprintUtils.addSprintToBoard(board, sprint);
   
@@ -16,12 +17,12 @@ export const addSprint = (filePath: string, sprintData: sprintUtils.CreateSprint
     },
   };
   
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
+  saveBoard(filepath, boardWithUpdatedDates);
   return sprint;
 }
 
-export const updateSprint = (filePath: string, sprintName: string, updates: Partial<Sprint>): Sprint => {
-  const board = boardActions.loadBoard(filePath);
+export const updateSprint = (filepath: Filepath, sprintName: string, updates: Partial<Sprint>): Sprint => {
+  const board = loadBoard(filepath);
   const updatedBoard = sprintUtils.updateSprintOnBoard(board, sprintName, updates);
   
   const boardWithUpdatedDates: Board = {
@@ -32,7 +33,7 @@ export const updateSprint = (filePath: string, sprintName: string, updates: Part
     },
   };
   
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
+  saveBoard(filepath, boardWithUpdatedDates);
   
   const updatedSprint = sprintUtils.getSprintByName(boardWithUpdatedDates, updates.name || sprintName);
   if (!updatedSprint) {
@@ -42,8 +43,8 @@ export const updateSprint = (filePath: string, sprintName: string, updates: Part
   return updatedSprint;
 }
 
-export const removeSprint = (filePath: string, sprintName: string): void => {
-  const board = boardActions.loadBoard(filePath);
+export const removeSprint = (filepath: Filepath, sprintName: string): void => {
+  const board = loadBoard(filepath);
   const updatedBoard = sprintUtils.removeSprintFromBoard(board, sprintName);
   
   const boardWithUpdatedDates: Board = {
@@ -54,16 +55,16 @@ export const removeSprint = (filePath: string, sprintName: string): void => {
     },
   };
   
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
+  saveBoard(filepath, boardWithUpdatedDates);
 }
 
-export const listSprints = (filePath: string): Sprint[] => {
-  const board = boardActions.loadBoard(filePath);
+export const listSprints = (filepath: Filepath): Sprint[] => {
+  const board = loadBoard(filepath);
   return board.sprints || [];
 }
 
-export const getSprint = (filePath: string, sprintName: string): Sprint => {
-  const board = boardActions.loadBoard(filePath);
+export const getSprint = (filepath: Filepath, sprintName: string): Sprint => {
+  const board = loadBoard(filepath);
   const sprint = sprintUtils.getSprintByName(board, sprintName);
   
   if (!sprint) {
@@ -73,17 +74,17 @@ export const getSprint = (filePath: string, sprintName: string): Sprint => {
   return sprint;
 }
 
-export const getActiveSprints = (filePath: string): Sprint[] => {
-  const board = boardActions.loadBoard(filePath);
+export const getActiveSprints = (filepath: Filepath): Sprint[] => {
+  const board = loadBoard(filepath);
   return sprintUtils.getActiveSprints(board);
 }
 
-export const getUpcomingSprints = (filePath: string): Sprint[] => {
-  const board = boardActions.loadBoard(filePath);
+export const getUpcomingSprints = (filepath: Filepath): Sprint[] => {
+  const board = loadBoard(filepath);
   return sprintUtils.getUpcomingSprints(board);
 }
 
-export const getCompletedSprints = (filePath: string): Sprint[] => {
-  const board = boardActions.loadBoard(filePath);
+export const getCompletedSprints = (filepath: Filepath): Sprint[] => {
+  const board = loadBoard(filepath);
   return sprintUtils.getCompletedSprints(board);
 }
