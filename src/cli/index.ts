@@ -3,8 +3,8 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as readline from 'readline';
-import { findBoardFiles, loadBoard, saveBoard, createBoard } from '../core/actions/board';
-import { createTaskOnBoard, updateTaskOnBoard } from '../core/utils/board';
+import { findBoardFiles, createBoard } from '../core/actions/board';
+import * as TaskActions from '../core/actions/task';
 
 function startWebServer(port: number): void {
   console.log(`Starting knbn-web server on port ${port}...`);
@@ -130,20 +130,14 @@ async function createTask(args: string[], providedBoardFile?: string): Promise<v
   }
 
   try {
-    const board = loadBoard(boardFile);
-    
     // Parse task arguments
     const title = args.join(' ') || 'New Task';
     
-    const updatedBoard = createTaskOnBoard(board, { title });
-    saveBoard(boardFile, updatedBoard);
-    
-    const createdTask = Object.values(updatedBoard.tasks).find(task => 
-      Object.values(board.tasks).find(oldTask => oldTask.id === task.id) === undefined
-    );
-    if (createdTask) {
-      console.log(`Created task #${createdTask.id}: ${createdTask.title}`);
-      console.log(`Column: ${createdTask.column}`);
+    const { board, task } = TaskActions.createTask(boardFile, { title });
+
+    if (task) {
+      console.log(`Created task #${task.id}: ${task.title}`);
+      console.log(`Column: ${task.column}`);
     }
   } catch (error) {
     console.error(`Failed to create task: ${error}`);
@@ -175,8 +169,6 @@ async function updateTask(args: string[], providedBoardFile?: string): Promise<v
   }
 
   try {
-    const board = loadBoard(boardFile);
-    
     // Parse update arguments
     const updates: Partial<any> = {};
     for (let i = 1; i < args.length; i++) {
@@ -200,17 +192,15 @@ async function updateTask(args: string[], providedBoardFile?: string): Promise<v
       process.exit(1);
     }
 
-    const updatedBoard = updateTaskOnBoard(board, taskId, updates);
-    const updatedTask = updatedBoard.tasks[taskId];
-    if (!updatedTask) {
+    const board = TaskActions.updateTask(boardFile, taskId, updates);
+    const task = board.tasks[taskId];
+    if (!task) {
       console.error(`Task #${taskId} not found`);
       process.exit(1);
     }
 
-    saveBoard(boardFile, updatedBoard);
-    
-    console.log(`Updated task #${updatedTask.id}: ${updatedTask.title}`);
-    console.log(`Column: ${updatedTask.column}`);
+    console.log(`Updated task #${task.id}: ${task.title}`);
+    console.log(`Column: ${task.column}`);
   } catch (error) {
     console.error(`Failed to update task: ${error}`);
     process.exit(1);

@@ -31,7 +31,10 @@ export const findDefaultColumn = (board: Board): Column | undefined => {
   return board.columns[0];
 }
 
-export const createTaskOnBoard = (board: Board, taskData: Omit<CreateTaskParams, 'id'>): Board => {
+export const createTaskOnBoard = (board: Board, taskData: Omit<CreateTaskParams, 'id'>): {
+  board: Board,
+  task: Task,
+} => {
   const now = getNow();
 
   const nextId = board.metadata.nextId;
@@ -52,7 +55,7 @@ export const createTaskOnBoard = (board: Board, taskData: Omit<CreateTaskParams,
     [task.id]: task,
   };
 
-  return {
+  const updatedBoard = {
     ...board,
     tasks: updatedTasks,
     metadata: {
@@ -64,6 +67,11 @@ export const createTaskOnBoard = (board: Board, taskData: Omit<CreateTaskParams,
       updated: now,
     }
   };
+
+  return {
+    board: updatedBoard,
+    task,
+  }
 }
 
 export const updateTaskOnBoard = (board: Board, taskId: number, updates: Partial<Task>): Board => {

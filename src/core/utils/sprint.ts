@@ -1,7 +1,7 @@
 import { Sprint, Board } from '../types/knbn';
 import { getNow } from './misc';
 
-export type CreateSprintParams = Partial<Sprint> & Pick<Sprint, 'name' | 'dates'>;
+export type CreateSprintParams = Partial<Sprint> & Pick<Sprint, 'name'>;
 
 export function createSprint(sprintData: CreateSprintParams): Sprint {
   const now = getNow();
@@ -11,19 +11,19 @@ export function createSprint(sprintData: CreateSprintParams): Sprint {
     description: sprintData.description,
     capacity: sprintData.capacity,
     dates: {
-      created: sprintData.dates.created || now,
-      starts: sprintData.dates.starts,
-      ends: sprintData.dates.ends,
+      created: sprintData.dates?.created || now,
+      starts: sprintData.dates?.starts || now,
+      ends: sprintData.dates?.ends,
     },
   };
 }
 
-export const findSprintByName = (board: Board, name: string): Sprint | undefined => {
+export const getSprintByName = (board: Board, name: string): Sprint | undefined => {
   return board.sprints?.find(sprint => sprint.name === name);
 }
 
 export const addSprintToBoard = (board: Board, sprint: Sprint): Board => {
-  const existingSprint = findSprintByName(board, sprint.name);
+  const existingSprint = getSprintByName(board, sprint.name);
   if (existingSprint) {
     throw new Error(`Sprint with name "${sprint.name}" already exists`);
   }
@@ -48,10 +48,10 @@ export const updateSprintOnBoard = (board: Board, sprintName: string, updates: P
     ...existingSprint,
     ...updates,
     name: updates.name || existingSprint.name,
-    dates: updates.dates ? {
+    dates: {
       ...existingSprint.dates,
       ...updates.dates,
-    } : existingSprint.dates,
+    },
   };
 
   const updatedSprints = [...sprints];

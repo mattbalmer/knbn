@@ -1,82 +1,34 @@
 import * as columnUtils from '../utils/column';
 import * as boardActions from './board';
 import { Column, Board, Task } from '../types/knbn';
-import { getNow } from '../utils/misc';
 
-export const addColumn = (filePath: string, columnData: columnUtils.CreateColumnParams, position?: number): Column => {
+export const createColumn = (filePath: string, columnData: columnUtils.CreateColumnParams, position?: number): Board => {
   const board = boardActions.loadBoard(filePath);
   const column = columnUtils.createColumn(columnData);
   const updatedBoard = columnUtils.addColumnToBoard(board, column, position);
-  
-  const boardWithUpdatedDates: Board = {
-    ...updatedBoard,
-    dates: {
-      ...updatedBoard.dates,
-      updated: getNow(),
-    },
-  };
-  
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
-  return column;
+  boardActions.saveBoard(filePath, updatedBoard);
+  return updatedBoard;
 }
 
-export const updateColumn = (filePath: string, columnName: string, updates: Partial<Column>): Column => {
+export const updateColumn = (filePath: string, columnName: string, updates: Partial<Column>): Board => {
   const board = boardActions.loadBoard(filePath);
   const updatedBoard = columnUtils.updateColumnOnBoard(board, columnName, updates);
-  
-  const boardWithUpdatedDates: Board = {
-    ...updatedBoard,
-    dates: {
-      ...updatedBoard.dates,
-      updated: getNow(),
-    },
-  };
-  
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
-  
-  const updatedColumn = columnUtils.findColumnByName(boardWithUpdatedDates, updates.name || columnName);
-  if (!updatedColumn) {
-    throw new Error(`Updated column not found`);
-  }
-  
-  return updatedColumn;
+  boardActions.saveBoard(filePath, updatedBoard);
+  return updatedBoard;
 }
 
-export const removeColumn = (filePath: string, columnName: string): void => {
+export const removeColumn = (filePath: string, columnName: string): Board => {
   const board = boardActions.loadBoard(filePath);
   const updatedBoard = columnUtils.removeColumnFromBoard(board, columnName);
-  
-  const boardWithUpdatedDates: Board = {
-    ...updatedBoard,
-    dates: {
-      ...updatedBoard.dates,
-      updated: getNow(),
-    },
-  };
-  
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
+  boardActions.saveBoard(filePath, updatedBoard);
+  return updatedBoard;
 }
 
-export const moveColumn = (filePath: string, columnName: string, newPosition: number): Column => {
+export const moveColumn = (filePath: string, columnName: string, newPosition: number): Board => {
   const board = boardActions.loadBoard(filePath);
   const updatedBoard = columnUtils.moveColumnOnBoard(board, columnName, newPosition);
-  
-  const boardWithUpdatedDates: Board = {
-    ...updatedBoard,
-    dates: {
-      ...updatedBoard.dates,
-      updated: getNow(),
-    },
-  };
-  
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
-  
-  const movedColumn = columnUtils.findColumnByName(boardWithUpdatedDates, columnName);
-  if (!movedColumn) {
-    throw new Error(`Moved column not found`);
-  }
-  
-  return movedColumn;
+  boardActions.saveBoard(filePath, updatedBoard);
+  return updatedBoard;
 }
 
 export const listColumns = (filePath: string): Column[] => {
@@ -84,15 +36,9 @@ export const listColumns = (filePath: string): Column[] => {
   return board.columns;
 }
 
-export const getColumn = (filePath: string, columnName: string): Column => {
+export const getColumn = (filePath: string, columnName: string): Column | undefined => {
   const board = boardActions.loadBoard(filePath);
-  const column = columnUtils.findColumnByName(board, columnName);
-  
-  if (!column) {
-    throw new Error(`Column with name "${columnName}" not found`);
-  }
-  
-  return column;
+  return columnUtils.getColumnByName(board, columnName);
 }
 
 export const getTasksInColumn = (filePath: string, columnName: string): Task[] => {

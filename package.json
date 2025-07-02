@@ -16,7 +16,9 @@
     "type": "git",
     "url": "https://github.com/mattbalmer/knbn"
   },
-  "bin": "dist/cli/index.js",
+  "bin": {
+    "knbn": "dist/cli/index.js"
+  },
   "scripts": {
     "build": "rm -rf dist && tsc",
     "test": "jest",

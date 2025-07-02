@@ -1,4 +1,5 @@
 import { Column, Board, Task } from '../types/knbn';
+import { getNow } from './misc';
 
 export type CreateColumnParams = Partial<Column> & Pick<Column, 'name'>;
 
@@ -8,12 +9,12 @@ export function createColumn(columnData: CreateColumnParams): Column {
   };
 }
 
-export const findColumnByName = (board: Board, name: string): Column | undefined => {
+export const getColumnByName = (board: Board, name: string): Column | undefined => {
   return board.columns.find(column => column.name === name);
 }
 
 export const addColumnToBoard = (board: Board, column: Column, position?: number): Board => {
-  const existingColumn = findColumnByName(board, column.name);
+  const existingColumn = getColumnByName(board, column.name);
   if (existingColumn) {
     throw new Error(`Column with name "${column.name}" already exists`);
   }
@@ -29,6 +30,10 @@ export const addColumnToBoard = (board: Board, column: Column, position?: number
   return {
     ...board,
     columns,
+    dates: {
+      ...board.dates,
+      updated: getNow(),
+    }
   };
 }
 
@@ -51,6 +56,10 @@ export const updateColumnOnBoard = (board: Board, columnName: string, updates: P
   return {
     ...board,
     columns: updatedColumns,
+    dates: {
+      ...board.dates,
+      updated: getNow(),
+    },
   };
 }
 
@@ -69,6 +78,10 @@ export const removeColumnFromBoard = (board: Board, columnName: string): Board =
   return {
     ...board,
     columns: board.columns.filter(column => column.name !== columnName),
+    dates: {
+      ...board.dates,
+      updated: getNow(),
+    },
   };
 }
 
@@ -90,6 +103,10 @@ export const moveColumnOnBoard = (board: Board, columnName: string, newPosition:
   return {
     ...board,
     columns,
+    dates: {
+      ...board.dates,
+      updated: getNow(),
+    },
   };
 }
 

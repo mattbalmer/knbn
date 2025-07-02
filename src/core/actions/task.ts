@@ -37,11 +37,20 @@ export const findTasks = (filepath: string, query: string, keys?: string[]): Tas
     .filter(task => callback(task));
 }
 
-export const createTask = (filepath: string, taskData: Omit<CreateTaskParams, 'id'>): Board => {
+export const createTask = (filepath: string, taskData: Omit<CreateTaskParams, 'id'>): {
+  board: Board,
+  task: Task,
+} => {
   const board = loadBoard(filepath);
-  const updatedBoard = createTaskOnBoard(board, taskData);
+  const {
+    board: updatedBoard,
+    task,
+  } = createTaskOnBoard(board, taskData);
   saveBoard(filepath, updatedBoard);
-  return updatedBoard;
+  return {
+    board: updatedBoard,
+    task
+  };
 }
 
 export const updateTask = (filepath: string, taskId: number, updates: Partial<Task>): Board => {

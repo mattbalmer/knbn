@@ -3,58 +3,26 @@ import * as boardActions from './board';
 import { Label, Board } from '../types/knbn';
 import { getNow } from '../utils/misc';
 
-export const addLabel = (filePath: string, labelData: labelUtils.CreateLabelParams): Label => {
+export const addLabel = (filePath: string, labelData: labelUtils.CreateLabelParams): Board => {
   const board = boardActions.loadBoard(filePath);
   const label = labelUtils.createLabel(labelData);
   const updatedBoard = labelUtils.addLabelToBoard(board, label);
-  
-  const boardWithUpdatedDates: Board = {
-    ...updatedBoard,
-    dates: {
-      ...updatedBoard.dates,
-      updated: getNow(),
-    },
-  };
-  
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
-  return label;
+  boardActions.saveBoard(filePath, updatedBoard);
+  return updatedBoard;
 }
 
-export const updateLabel = (filePath: string, labelName: string, updates: Partial<Label>): Label => {
+export const updateLabel = (filePath: string, labelName: string, updates: Partial<Label>): Board => {
   const board = boardActions.loadBoard(filePath);
   const updatedBoard = labelUtils.updateLabelOnBoard(board, labelName, updates);
-  
-  const boardWithUpdatedDates: Board = {
-    ...updatedBoard,
-    dates: {
-      ...updatedBoard.dates,
-      updated: getNow(),
-    },
-  };
-  
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
-  
-  const updatedLabel = labelUtils.findLabelByName(boardWithUpdatedDates, updates.name || labelName);
-  if (!updatedLabel) {
-    throw new Error(`Updated label not found`);
-  }
-  
-  return updatedLabel;
+  boardActions.saveBoard(filePath, updatedBoard);
+  return updatedBoard;
 }
 
-export const removeLabel = (filePath: string, labelName: string): void => {
+export const removeLabel = (filePath: string, labelName: string): Board => {
   const board = boardActions.loadBoard(filePath);
   const updatedBoard = labelUtils.removeLabelFromBoard(board, labelName);
-  
-  const boardWithUpdatedDates: Board = {
-    ...updatedBoard,
-    dates: {
-      ...updatedBoard.dates,
-      updated: getNow(),
-    },
-  };
-  
-  boardActions.saveBoard(filePath, boardWithUpdatedDates);
+  boardActions.saveBoard(filePath, updatedBoard);
+  return updatedBoard;
 }
 
 export const listLabels = (filePath: string): Label[] => {
@@ -62,13 +30,7 @@ export const listLabels = (filePath: string): Label[] => {
   return board.labels || [];
 }
 
-export const getLabel = (filePath: string, labelName: string): Label => {
+export const getLabel = (filePath: string, labelName: string): Label | undefined => {
   const board = boardActions.loadBoard(filePath);
-  const label = labelUtils.findLabelByName(board, labelName);
-  
-  if (!label) {
-    throw new Error(`Label with name "${labelName}" not found`);
-  }
-  
-  return label;
+  return labelUtils.getLabelByName(board, labelName);
 }

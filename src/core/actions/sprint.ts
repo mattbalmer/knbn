@@ -34,7 +34,7 @@ export const updateSprint = (filePath: string, sprintName: string, updates: Part
   
   boardActions.saveBoard(filePath, boardWithUpdatedDates);
   
-  const updatedSprint = sprintUtils.findSprintByName(boardWithUpdatedDates, updates.name || sprintName);
+  const updatedSprint = sprintUtils.getSprintByName(boardWithUpdatedDates, updates.name || sprintName);
   if (!updatedSprint) {
     throw new Error(`Updated sprint not found`);
   }
@@ -64,7 +64,7 @@ export const listSprints = (filePath: string): Sprint[] => {
 
 export const getSprint = (filePath: string, sprintName: string): Sprint => {
   const board = boardActions.loadBoard(filePath);
-  const sprint = sprintUtils.findSprintByName(board, sprintName);
+  const sprint = sprintUtils.getSprintByName(board, sprintName);
   
   if (!sprint) {
     throw new Error(`Sprint with name "${sprintName}" not found`);
