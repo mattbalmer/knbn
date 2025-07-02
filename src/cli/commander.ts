@@ -1,34 +1,11 @@
 import { Command } from 'commander';
-import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { findBoardFiles, createBoard } from '../core/actions/board';
 import * as TaskActions from '../core/actions/task';
+import { attachServe } from './commands/serve';
 
 const program = new Command();
-
-function startWebServer(port: number): void {
-  console.log(`Starting knbn-web server on port ${port}...`);
-  
-  const args = ['--port', port.toString()];
-  const child = spawn('knbn-web', args, {
-    stdio: 'inherit',
-    shell: true
-  });
-
-  child.on('error', (error) => {
-    console.error('Failed to start knbn-web server:', error.message);
-    console.error('Make sure knbn-web is installed and available in your PATH');
-    process.exit(1);
-  });
-
-  child.on('exit', (code) => {
-    if (code !== 0) {
-      console.error(`knbn-web server exited with code ${code}`);
-      process.exit(code || 1);
-    }
-  });
-}
 
 async function promptForBoardCreation(noPrompt: boolean = false): Promise<string | undefined> {
   if (noPrompt) {
@@ -179,18 +156,7 @@ export function setupCommander(): Command {
     .description('KnBn - Kanban CLI Tool')
     .version('0.2.3');
 
-  program
-    .command('serve')
-    .description('Start the web server')
-    .option('-p, --port <port>', 'Set the server port', '9000')
-    .action((options) => {
-      const port = parseInt(options.port, 10);
-      if (isNaN(port) || port < 1 || port > 65535) {
-        console.error('Error: Port must be a number between 1 and 65535');
-        process.exit(1);
-      }
-      startWebServer(port);
-    });
+  attachServe(program);
 
   program
     .command('create-board [name]')
