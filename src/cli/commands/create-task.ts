@@ -10,9 +10,9 @@ export const attachCreateTask = (program: Command) =>
     .option('--no-prompt', 'Skip prompts for board creation')
     .action(async (title, options: {
       file?: string;
-      'no-prompt'?: boolean;
+      noPrompt?: boolean;
     }) => {
-      const boardFile = await ensureBoardFile(options.file, options['no-prompt']);
+      const boardFile = await ensureBoardFile(options.file, options.noPrompt);
 
       try {
         const taskTitle = title || 'New Task';

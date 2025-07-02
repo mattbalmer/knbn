@@ -41,23 +41,6 @@ export async function promptForBoardCreation(noPrompt: boolean = false): Promise
   }
 }
 
-export async function listBoardFiles(noPrompt: boolean = false): Promise<void> {
-  const cwd = process.cwd();
-  const files = fs.readdirSync(cwd).filter(file => file.endsWith('.knbn'));
-  
-  if (files.length === 0) {
-    console.log('No .knbn board files found in current directory.');
-    await promptForBoardCreation(noPrompt);
-  } else {
-    console.log('Found .knbn board files:');
-    files.forEach(file => {
-      console.log(`  ${file}`);
-    });
-  }
-  
-  console.log('\nUse -h for help and available commands.');
-}
-
 export async function ensureBoardFile(providedFile?: string, noPrompt: boolean = false): Promise<Filepath<'abs'>> {
   let boardFile = providedFile ? ensureAbsolutePath(providedFile) : findBoardFiles(pcwd())[0];
   if (!boardFile) {

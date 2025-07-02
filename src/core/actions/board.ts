@@ -1,5 +1,5 @@
 import * as boardUtils from '../utils/board';
-import { Board } from '../types/knbn';
+import { Board } from '../types';
 import fs from 'fs';
 import path from 'path';
 import { extractFilenameFromPath } from '../utils/files';
