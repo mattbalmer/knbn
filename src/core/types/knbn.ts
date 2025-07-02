@@ -6,6 +6,7 @@ export interface Task {
   sprint?: string;
   labels?: string[];
   storyPoints?: number;
+  priority?: number;
   dates: {
     created: string;
     updated: string;

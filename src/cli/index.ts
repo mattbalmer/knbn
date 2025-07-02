@@ -158,7 +158,7 @@ async function updateTask(args: string[], providedBoardFile?: string): Promise<v
   }
 
   if (args.length < 1) {
-    console.error('Usage: knbn update-task <id> [--title "New Title"] [--column "new-column"] [--description "New description"] [--assignee "person"]');
+    console.error('Usage: knbn update-task <id> [--title "New Title"] [--column "new-column"] [--description "New description"] [--priority <number>]');
     process.exit(1);
   }
 
@@ -181,14 +181,17 @@ async function updateTask(args: string[], providedBoardFile?: string): Promise<v
       } else if (args[i] === '--description' && i + 1 < args.length) {
         updates.description = args[i + 1];
         i++;
-      } else if (args[i] === '--assignee' && i + 1 < args.length) {
-        updates.assignee = args[i + 1];
+      } else if (args[i] === '--priority' && i + 1 < args.length) {
+        const priority = parseInt(args[i + 1], 10);
+        if (!isNaN(priority)) {
+          updates.priority = priority;
+        }
         i++;
       }
     }
 
     if (Object.keys(updates).length === 0) {
-      console.error('No updates specified. Use --title, --column, --description, or --assignee');
+      console.error('No updates specified. Use --title, --column, --description, or --priority');
       process.exit(1);
     }
 

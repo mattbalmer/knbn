@@ -13,6 +13,7 @@ export function createTask(taskData: CreateTaskParams): Task {
     labels: taskData.labels,
     sprint: taskData.sprint,
     storyPoints: taskData.storyPoints,
+    priority: taskData.priority,
     dates: {
       created: taskData.dates?.created || now,
       updated: taskData.dates?.updated || now,
@@ -53,4 +54,24 @@ export const updateTask = (board: Board, taskId: number, updates: Partial<Task>)
       updated: now,
     },
   };
+}
+
+export const sortTasks = (tasks: Task[]): Task[] => {
+  return [...tasks].sort((a, b) => {
+    // Tasks with priority come first, sorted by ascending priority
+    if (a.priority !== undefined && b.priority === undefined) return -1;
+    if (a.priority === undefined && b.priority !== undefined) return 1;
+    
+    // Both have priority - sort by ascending priority
+    if (a.priority !== undefined && b.priority !== undefined) {
+      if (a.priority !== b.priority) {
+        return a.priority - b.priority;
+      }
+    }
+    
+    // Same priority (or both undefined) - sort by recently modified (descending)
+    const aUpdated = new Date(a.dates.updated).getTime();
+    const bUpdated = new Date(b.dates.updated).getTime();
+    return bUpdated - aUpdated;
+  });
 }

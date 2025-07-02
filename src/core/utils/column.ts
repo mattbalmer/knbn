@@ -1,5 +1,6 @@
 import { Column, Board, Task } from '../types/knbn';
 import { getNow } from './misc';
+import { sortTasks } from './task';
 
 export type CreateColumnParams = Partial<Column> & Pick<Column, 'name'>;
 
@@ -111,7 +112,7 @@ export const moveColumnOnBoard = (board: Board, columnName: string, newPosition:
 }
 
 export const getTasksInColumn = (board: Board, columnName: string): Task[] => {
-  return Object.values(board.tasks).filter(task => task.column === columnName);
+  return sortTasks(Object.values(board.tasks).filter(task => task.column === columnName));
 }
 
 export const getColumnTaskCount = (board: Board, columnName: string): number => {

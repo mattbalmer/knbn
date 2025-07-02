@@ -1,6 +1,6 @@
 import { Board, Task } from '../types';
-import { newTask, updateTaskOnBoard } from '../utils/board';
-import { CreateTaskParams } from '../utils/task';
+import { newTask } from '../utils/board';
+import { CreateTaskParams, updateTask as updateTaskUtil, sortTasks } from '../utils/task';
 import { loadBoard, saveBoard } from './board';
 
 export const getTask = (filepath: string, taskId: number): Task | undefined => {
@@ -14,7 +14,7 @@ export const findTasks = (filepath: string, query: string, keys?: string[]): Tas
   const lowerQuery = query.toLowerCase();
 
   if (!query) {
-    return Object.values(board.tasks);
+    return sortTasks(Object.values(board.tasks));
   }
 
   const stringKeys = ['title', 'description', 'sprint'].filter(key => keys?.includes(key) ?? true);
@@ -33,8 +33,8 @@ export const findTasks = (filepath: string, query: string, keys?: string[]): Tas
     return stringMatch || arrayMatch;
   };
 
-  return Object.values(board.tasks)
-    .filter(task => callback(task));
+  return sortTasks(Object.values(board.tasks)
+    .filter(task => callback(task)));
 }
 
 export const createTask = (filepath: string, taskData: Omit<CreateTaskParams, 'id'>): {
@@ -55,7 +55,7 @@ export const createTask = (filepath: string, taskData: Omit<CreateTaskParams, 'i
 
 export const updateTask = (filepath: string, taskId: number, updates: Partial<Task>): Board => {
   const board = loadBoard(filepath);
-  const updatedBoard = updateTaskOnBoard(board, taskId, updates);
+  const updatedBoard = updateTaskUtil(board, taskId, updates);
   saveBoard(filepath, updatedBoard);
   return updatedBoard;
 }
