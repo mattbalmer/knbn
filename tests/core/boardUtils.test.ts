@@ -8,7 +8,7 @@ import {
   updateTaskInBoard,
   createBoard
 } from '../../src/core/boardUtils';
-import { Board, Task } from '../../src/core/types';
+import { Board, Task } from '../../src/core/types/knbn';
 // @ts-ignore
 import { createTempDir, rmTempDir } from '../test-utils';
 

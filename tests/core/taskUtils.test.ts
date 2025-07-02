@@ -1,5 +1,5 @@
 import { createTask } from '../../src/core/taskUtils';
-import { Task } from '../../src/core/types';
+import { Task } from '../../src/core/types/knbn';
 
 describe('taskUtils', () => {
   describe('createTask', () => {

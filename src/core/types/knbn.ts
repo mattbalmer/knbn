@@ -5,7 +5,6 @@ export interface Task {
   column: string;
   sprint?: string;
   labels?: string[];
-  assignee?: string;
   storyPoints?: number;
   dates: {
     created: string;
@@ -16,6 +15,11 @@ export interface Task {
 
 export interface Column {
   name: string;
+}
+
+export interface Label {
+  name: string;
+  color?: string;
 }
 
 export interface Sprint {
@@ -30,17 +34,19 @@ export interface Sprint {
 }
 
 export interface Board {
-  configuration: {
-    name: string;
-    description: string;
-    columns: Column[];
-  };
+  name: string;
+  description?: string;
+  columns: Column[];
   tasks: Record<number, Task>;
+  labels?: Label[];
   sprints?: Sprint[];
   metadata: {
     nextId: number;
-    createdAt: string;
-    lastModified: string;
     version: string;
+  };
+  dates: {
+    created: string;
+    updated: string;
+    saved: string;
   };
 }
