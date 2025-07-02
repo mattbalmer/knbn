@@ -1,5 +1,5 @@
 import { Board, Task } from '../types';
-import { createTaskOnBoard, updateTaskOnBoard } from '../utils/board';
+import { newTask, updateTaskOnBoard } from '../utils/board';
 import { CreateTaskParams } from '../utils/task';
 import { loadBoard, saveBoard } from './board';
 
@@ -45,7 +45,7 @@ export const createTask = (filepath: string, taskData: Omit<CreateTaskParams, 'i
   const {
     board: updatedBoard,
     task,
-  } = createTaskOnBoard(board, taskData);
+  } = newTask(board, taskData);
   saveBoard(filepath, updatedBoard);
   return {
     board: updatedBoard,

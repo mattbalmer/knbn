@@ -35,7 +35,7 @@ export const createBoard = (filePath: string, boardData: boardUtils.CreateBoardP
 
   // Add an initial task, for fun (if no tasks are provided)
   if (!board.tasks || Object.keys(board.tasks).length === 0) {
-    boardUtils.createTaskOnBoard(board, {
+    boardUtils.newTask(board, {
       title: 'Create a .knbn!',
       description: 'Create your .knbn file to start using KnBn',
       column: 'done',
