@@ -59,7 +59,7 @@ describe('sprint utils', () => {
           }
         }
       ],
-      metadata: { nextId: 1, version: '0.1.0' },
+      metadata: { nextId: 1, version: '0.2.0' },
       dates: {
         created: '2024-01-01T09:00:00Z',
         updated: '2024-01-01T09:00:00Z',
@@ -69,6 +69,7 @@ describe('sprint utils', () => {
   });
 
   describe('createSprint', () => {
+    // TODO: Dont accept created date (here and elsewhere)
     it('should create a sprint with all properties', () => {
       const sprintData = {
         name: 'Test Sprint',
@@ -86,7 +87,7 @@ describe('sprint utils', () => {
       expect(sprint).toEqual(sprintData);
     });
 
-    it('should create a sprint with minimal data', () => {
+    it('should create a sprint with default values', () => {
       const sprint = createSprint({ name: 'Minimal Sprint' });
       
       expect(sprint.name).toBe('Minimal Sprint');
@@ -143,8 +144,8 @@ describe('sprint utils', () => {
 
     it('should be case sensitive', () => {
       const sprint = getSprintByName(sampleBoard, 'sprint 1');
-      
-      expect(sprint).toBeUndefined();
+
+      expect(sprint?.name).toBe('Sprint 1');
     });
 
     it('should handle board without sprints', () => {
@@ -197,6 +198,14 @@ describe('sprint utils', () => {
       );
     });
 
+    it('should throw error if sprint with same name exists (case insensitive)', () => {
+      const duplicateSprint = createSprint({ name: 'SPRINT 1' });
+
+      expect(() => addSprintToBoard(sampleBoard, duplicateSprint)).toThrow(
+        'Sprint with name "Sprint 1" already exists'
+      );
+    });
+
     it('should not mutate original board', () => {
       const originalSprints = sampleBoard.sprints ? [...sampleBoard.sprints] : undefined;
       const newSprint = createSprint({ name: 'New Sprint' });
@@ -220,6 +229,12 @@ describe('sprint utils', () => {
       const updatedBoard = updateSprintOnBoard(sampleBoard, 'Sprint 1', { name: 'Renamed Sprint' });
       
       expect(updatedBoard.sprints![0].name).toBe('Renamed Sprint');
+    });
+
+    it('should update sprint name with new case', () => {
+      const updatedBoard = updateSprintOnBoard(sampleBoard, 'sprint 1', { name: 'SPRINT 1' });
+
+      expect(updatedBoard.sprints![0].name).toBe('SPRINT 1');
     });
 
     it('should update sprint dates', () => {
@@ -269,20 +284,20 @@ describe('sprint utils', () => {
   describe('removeSprintFromBoard', () => {
     it('should remove existing sprint', () => {
       const updatedBoard = removeSprintFromBoard(sampleBoard, 'Sprint 1');
-      
+
       expect(updatedBoard.sprints).toHaveLength(2);
       expect(updatedBoard.sprints!.find(sprint => sprint.name === 'Sprint 1')).toBeUndefined();
     });
 
-    it('should throw error for non-existent sprint', () => {
-      expect(() => removeSprintFromBoard(sampleBoard, 'nonexistent')).toThrow(
-        'Sprint with name "nonexistent" not found'
-      );
+    it('should pass original board for non-existent sprint', () => {
+      const updatedBoard = removeSprintFromBoard(sampleBoard, 'nonexistent');
+
+      expect(updatedBoard).toEqual(sampleBoard);
     });
 
     it('should handle board without sprints', () => {
       const boardWithoutSprints = { ...sampleBoard, sprints: undefined };
-      
+
       expect(() => removeSprintFromBoard(boardWithoutSprints, 'Sprint 1')).toThrow(
         'Sprint with name "Sprint 1" not found'
       );
@@ -290,7 +305,7 @@ describe('sprint utils', () => {
 
     it('should handle board with empty sprints array', () => {
       const boardWithEmptySprints = { ...sampleBoard, sprints: [] };
-      
+
       expect(() => removeSprintFromBoard(boardWithEmptySprints, 'Sprint 1')).toThrow(
         'Sprint with name "Sprint 1" not found'
       );
@@ -299,7 +314,7 @@ describe('sprint utils', () => {
     it('should not mutate original board', () => {
       const originalSprints = sampleBoard.sprints ? [...sampleBoard.sprints] : undefined;
       removeSprintFromBoard(sampleBoard, 'Sprint 1');
-      
+
       expect(sampleBoard.sprints).toEqual(originalSprints);
     });
   });

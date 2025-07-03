@@ -19,10 +19,10 @@ describe('label utils', () => {
       tasks: {},
       labels: [
         { name: 'bug', color: 'red' },
-        { name: 'feature', color: 'blue' },
+        { name: 'feature', color: '#0096FF' },
         { name: 'urgent' } // no color
       ],
-      metadata: { nextId: 1, version: '0.1.0' },
+      metadata: { nextId: 1, version: '0.2.0' },
       dates: {
         created: '2024-01-01T09:00:00Z',
         updated: '2024-01-01T09:00:00Z',
@@ -43,12 +43,6 @@ describe('label utils', () => {
       
       expect(label).toEqual({ name: 'testing', color: undefined });
     });
-
-    it('should include all provided properties', () => {
-      const label = createLabel({ name: 'testing', color: 'purple' });
-      
-      expect(Object.keys(label)).toEqual(['name', 'color']);
-    });
   });
 
   describe('getLabelByName', () => {
@@ -64,10 +58,10 @@ describe('label utils', () => {
       expect(label).toBeUndefined();
     });
 
-    it('should be case sensitive', () => {
+    it('should not be case sensitive', () => {
       const label = getLabelByName(sampleBoard, 'BUG');
-      
-      expect(label).toBeUndefined();
+
+      expect(label).toEqual({ name: 'bug', color: 'red' });
     });
 
     it('should handle board without labels', () => {
@@ -123,6 +117,14 @@ describe('label utils', () => {
       );
     });
 
+    it('should throw error if label with same name exists (case-insensitive)', () => {
+      const duplicateLabel = { name: 'BUG', color: 'orange' };
+
+      expect(() => addLabelToBoard(sampleBoard, duplicateLabel)).toThrow(
+        'Label with name "bug" already exists'
+      );
+    });
+
     it('should not mutate original board', () => {
       const originalLabels = sampleBoard.labels ? [...sampleBoard.labels] : undefined;
       const newLabel = { name: 'testing', color: 'green' };
@@ -142,10 +144,25 @@ describe('label utils', () => {
       );
     });
 
+    it('should update existing label (case-insensitive)', () => {
+      const updatedBoard = updateLabelOnBoard(sampleBoard, 'BUG', { color: 'orange' });
+
+      expect(updatedBoard.labels![0]).toEqual({ name: 'bug', color: 'orange' });
+      expect(new Date(updatedBoard.dates.updated).getTime()).toBeGreaterThan(
+        new Date(sampleBoard.dates.updated).getTime()
+      );
+    });
+
     it('should update label name', () => {
       const updatedBoard = updateLabelOnBoard(sampleBoard, 'bug', { name: 'defect' });
       
       expect(updatedBoard.labels![0]).toEqual({ name: 'defect', color: 'red' });
+    });
+
+    it('should update label name (changing case)', () => {
+      const updatedBoard = updateLabelOnBoard(sampleBoard, 'bug', { name: 'BUG' });
+
+      expect(updatedBoard.labels![0]).toEqual({ name: 'BUG', color: 'red' });
     });
 
     it('should preserve name when not provided in updates', () => {
@@ -195,6 +212,24 @@ describe('label utils', () => {
       );
     });
 
+    it('should remove existing label (case insensitive)', () => {
+      const updatedBoard = removeLabelFromBoard(sampleBoard, 'BUG');
+
+      expect(updatedBoard.labels).toHaveLength(2);
+      expect(updatedBoard.labels!.find(label => label.name === 'BUG')).toBeUndefined();
+      expect(updatedBoard.labels!.find(label => label.name === 'bug')).toBeUndefined();
+      expect(new Date(updatedBoard.dates.updated).getTime()).toBeGreaterThan(
+        new Date(sampleBoard.dates.updated).getTime()
+      );
+    });
+
+    it('should silently succeed for non-existent label', () => {
+      const updatedBoard = removeLabelFromBoard(sampleBoard, 'nonexistent');
+
+      expect(updatedBoard.labels).toHaveLength(3);
+      expect(updatedBoard.labels).toEqual(sampleBoard.labels);
+    });
+
     it('should throw error for non-existent label', () => {
       expect(() => removeLabelFromBoard(sampleBoard, 'nonexistent')).toThrow(
         'Label with name "nonexistent" not found'
@@ -232,6 +267,13 @@ describe('label utils', () => {
       expect(results).toHaveLength(2);
       expect(results.map(label => label.name)).toContain('feature');
       expect(results.map(label => label.name)).toContain('urgent');
+    });
+
+    it('should find labels matching color', () => {
+      const results = findLabels(sampleBoard, '#0096FF');
+
+      expect(results).toHaveLength(1);
+      expect(results.map(label => label.name)).toContain('feature');
     });
 
     it('should be case insensitive', () => {

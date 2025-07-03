@@ -36,7 +36,6 @@ export const attachListBoards = (program: Command) =>
     .action(async (options: {
       skipPrompt?: boolean;
     }) => {
-      console.error('wtf', options);
       await listBoards(options);
     });
 

@@ -11,7 +11,7 @@ export function createSprint(sprintData: CreateSprintParams): Sprint {
     description: sprintData.description,
     capacity: sprintData.capacity,
     dates: {
-      created: sprintData.dates?.created || now,
+      created: now,
       starts: sprintData.dates?.starts || now,
       ends: sprintData.dates?.ends,
     },
@@ -19,7 +19,8 @@ export function createSprint(sprintData: CreateSprintParams): Sprint {
 }
 
 export const getSprintByName = (board: Board, name: string): Sprint | undefined => {
-  return board.sprints?.find(sprint => sprint.name === name);
+  const nameLower = name.toLowerCase();
+  return board.sprints?.find(sprint => sprint.name.toLowerCase() === nameLower);
 }
 
 export const addSprintToBoard = (board: Board, sprint: Sprint): Board => {
@@ -37,7 +38,8 @@ export const addSprintToBoard = (board: Board, sprint: Sprint): Board => {
 
 export const updateSprintOnBoard = (board: Board, sprintName: string, updates: Partial<Sprint>): Board => {
   const sprints = board.sprints || [];
-  const sprintIndex = sprints.findIndex(sprint => sprint.name === sprintName);
+  const nameLower = sprintName.toLowerCase();
+  const sprintIndex = sprints.findIndex(sprint => sprint.name.toLowerCase() === nameLower);
   
   if (sprintIndex === -1) {
     throw new Error(`Sprint with name "${sprintName}" not found`);
@@ -65,10 +67,11 @@ export const updateSprintOnBoard = (board: Board, sprintName: string, updates: P
 
 export const removeSprintFromBoard = (board: Board, sprintName: string): Board => {
   const sprints = board.sprints || [];
-  const sprintExists = sprints.some(sprint => sprint.name === sprintName);
+  const nameLower = sprintName.toLowerCase();
+  const sprintExists = sprints.some(sprint => sprint.name.toLowerCase() === nameLower);
   
   if (!sprintExists) {
-    throw new Error(`Sprint with name "${sprintName}" not found`);
+    return board; // No change if sprint not found
   }
 
   return {

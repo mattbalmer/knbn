@@ -46,7 +46,7 @@ describe('files utils', () => {
       const filename = extractFilenameFromPath(filepath);
       
       // On non-Windows systems, this will be treated as a filename with backslashes
-      expect(filename).toBe(path.parse(filepath).name);
+      expect(filename).toBe('test');
     });
 
     it('should handle empty path', () => {
@@ -160,6 +160,7 @@ describe('files utils', () => {
     });
   });
 
+  // TODO: Maybe take these tests out. They're kind of just testing implementation
   describe('ensureAbsolutePath', () => {
     it('should return absolute path unchanged', () => {
       const absolutePath = '/absolute/path/to/file.knbn';

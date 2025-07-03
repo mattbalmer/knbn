@@ -12,7 +12,6 @@ export const attachCreateTask = (program: Command) =>
       file?: string;
       skipPrompt?: boolean;
     }) => {
-      console.error('wtf', options);
       const boardFile = await ensureBoardFile(options.file, options.skipPrompt);
 
       try {

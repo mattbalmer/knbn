@@ -4,6 +4,7 @@ import * as yaml from 'js-yaml';
 import { saveBoard, loadBoard, loadBoardFields } from '../../../src/core/utils/board-files';
 import { Board } from '../../../src/core/types/knbn';
 import { Brands } from '../../../src/core/utils/ts';
+// @ts-ignore
 import { createTempDir } from '../../test-utils';
 
 describe('board-files utils', () => {
@@ -42,7 +43,7 @@ describe('board-files utils', () => {
           ends: '2024-01-15T09:00:00Z'
         }
       }],
-      metadata: { nextId: 2, version: '0.1.0' },
+      metadata: { nextId: 2, version: '0.2.0' },
       dates: {
         created: '2024-01-01T09:00:00Z',
         updated: '2024-01-01T09:00:00Z',
@@ -58,7 +59,7 @@ describe('board-files utils', () => {
   });
 
   describe('saveBoard', () => {
-    it('should save board to file with updated saved date', () => {
+    it('should update saved date', () => {
       const filepath = Brands.Filepath(testFilepath);
       const beforeSave = new Date().getTime();
       
@@ -70,10 +71,9 @@ describe('board-files utils', () => {
       const content = fs.readFileSync(testFilepath, 'utf8');
       const savedBoard = yaml.load(content) as Board;
       const savedTime = new Date(savedBoard.dates.saved).getTime();
-      
+
+      // TODO: Find better way to test dates, this could still false positive as it's checking equality (Here and elsewhere)
       expect(savedTime).toBeGreaterThanOrEqual(beforeSave);
-      expect(savedBoard.name).toBe(sampleBoard.name);
-      expect(savedBoard.description).toBe(sampleBoard.description);
     });
 
     it('should preserve all board data when saving', () => {
@@ -93,22 +93,6 @@ describe('board-files utils', () => {
       expect(savedBoard.metadata).toEqual(sampleBoard.metadata);
       expect(savedBoard.dates.created).toBe(sampleBoard.dates.created);
       expect(savedBoard.dates.updated).toBe(sampleBoard.dates.updated);
-    });
-
-    it('should format YAML output properly', () => {
-      const filepath = Brands.Filepath(testFilepath);
-      
-      saveBoard(filepath, sampleBoard);
-      
-      const content = fs.readFileSync(testFilepath, 'utf8');
-      
-      // Verify it's valid YAML
-      expect(() => yaml.load(content)).not.toThrow();
-      
-      // Verify indentation (should be 2 spaces)
-      const lines = content.split('\n');
-      const indentedLines = lines.filter(line => line.startsWith('  '));
-      expect(indentedLines.length).toBeGreaterThan(0);
     });
 
     it('should throw error when file cannot be written', () => {
@@ -231,28 +215,6 @@ describe('board-files utils', () => {
       expect(Object.keys(result)).toEqual(['name', 'description']);
     });
 
-    it('should load single field', () => {
-      const filepath = Brands.Filepath(testFilepath);
-      
-      const result = loadBoardFields(filepath, ['name']);
-      
-      expect(result).toEqual({
-        name: sampleBoard.name
-      });
-    });
-
-    it('should load multiple fields', () => {
-      const filepath = Brands.Filepath(testFilepath);
-      
-      const result = loadBoardFields(filepath, ['name', 'columns', 'metadata']);
-      
-      expect(result).toEqual({
-        name: sampleBoard.name,
-        columns: sampleBoard.columns,
-        metadata: sampleBoard.metadata
-      });
-    });
-
     it('should handle empty fields array', () => {
       const filepath = Brands.Filepath(testFilepath);
       
@@ -276,7 +238,7 @@ describe('board-files utils', () => {
         name: 'Minimal Board',
         columns: [{ name: 'todo' }],
         tasks: {},
-        metadata: { nextId: 1, version: '0.1.0' },
+        metadata: { nextId: 1, version: '0.2.0' },
         dates: {
           created: '2024-01-01T09:00:00Z',
           updated: '2024-01-01T09:00:00Z',

@@ -38,7 +38,7 @@ tasks:
       moved: "2024-01-01T12:00:00Z"
 metadata:
   nextId: 4
-  version: "0.1.0"
+  version: "0.2.0"
 dates:
   created: "2024-01-01T08:00:00Z"
   updated: "2024-01-01T12:00:00Z"

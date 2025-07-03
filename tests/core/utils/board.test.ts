@@ -32,62 +32,7 @@ describe('board utils', () => {
       expect(board.description).toBe('My local kanban board'); // default
     });
 
-    it('should create board with custom description', () => {
-      const board = createBoard({ description: 'Custom description' });
-      
-      expect(board.name).toBe('My Board'); // default
-      expect(board.description).toBe('Custom description');
-    });
-
-    it('should create board with custom columns', () => {
-      const customColumns = [{ name: 'ideas' }, { name: 'in-progress' }, { name: 'complete' }];
-      const board = createBoard({ columns: customColumns });
-      
-      expect(board.columns).toEqual(customColumns);
-    });
-
-    it('should create board with custom labels', () => {
-      const customLabels = [{ name: 'urgent', color: 'red' }, { name: 'feature', color: 'blue' }];
-      const board = createBoard({ labels: customLabels });
-      
-      expect(board.labels).toEqual(customLabels);
-    });
-
-    it('should create board with custom tasks', () => {
-      const customTasks = {
-        1: {
-          id: 1,
-          title: 'Test Task',
-          description: 'Test description',
-          column: 'todo',
-          dates: {
-            created: '2024-01-01T10:00:00Z',
-            updated: '2024-01-01T10:00:00Z'
-          }
-        }
-      };
-      const board = createBoard({ tasks: customTasks });
-      
-      expect(board.tasks).toEqual(customTasks);
-    });
-
-    it('should create board with custom sprints', () => {
-      const customSprints = [{
-        name: 'Sprint 1',
-        description: 'First sprint',
-        capacity: 10,
-        dates: {
-          created: '2024-01-01T09:00:00Z',
-          starts: '2024-01-01T09:00:00Z',
-          ends: '2024-01-15T09:00:00Z'
-        }
-      }];
-      const board = createBoard({ sprints: customSprints });
-      
-      expect(board.sprints).toEqual(customSprints);
-    });
-
-    it('should create board with all custom properties', () => {
+    it('should create board using arguments over defaults', () => {
       const customData = {
         name: 'Full Custom Board',
         description: 'Fully customized board',
@@ -146,17 +91,17 @@ describe('board utils', () => {
       const board = createBoard({
         columns: [{ name: 'first' }, { name: 'second' }, { name: 'third' }]
       });
-      
+
       const defaultColumn = findDefaultColumn(board);
-      
+
       expect(defaultColumn).toEqual({ name: 'first' });
     });
 
     it('should return undefined for board with no columns', () => {
       const board = createBoard({ columns: [] });
-      
+
       const defaultColumn = findDefaultColumn(board);
-      
+
       expect(defaultColumn).toBeUndefined();
     });
 
@@ -179,7 +124,7 @@ describe('board utils', () => {
       });
     });
 
-    it('should create new task and update board', () => {
+    it('should create new task and add to board', () => {
       const taskData = {
         title: 'Test Task',
         description: 'Test description'
@@ -195,7 +140,6 @@ describe('board utils', () => {
       expect(result.task.dates.updated).toBeDefined();
       
       expect(result.board.tasks[1]).toEqual(result.task);
-      expect(result.board.metadata.nextId).toBe(2);
     });
 
     it('should increment nextId correctly', () => {

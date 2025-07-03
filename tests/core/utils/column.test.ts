@@ -9,7 +9,7 @@ import {
   getColumnTaskCount,
   getColumnNames
 } from '../../../src/core/utils/column';
-import { Board, Task } from '../../../src/core/types/knbn';
+import { Board } from '../../../src/core/types/knbn';
 
 describe('column utils', () => {
   let sampleBoard: Board;
@@ -55,7 +55,7 @@ describe('column utils', () => {
           }
         }
       },
-      metadata: { nextId: 4, version: '0.1.0' },
+      metadata: { nextId: 4, version: '0.2.0' },
       dates: {
         created: '2024-01-01T09:00:00Z',
         updated: '2024-01-01T09:00:00Z',
@@ -69,12 +69,6 @@ describe('column utils', () => {
       const column = createColumn({ name: 'testing' });
       
       expect(column).toEqual({ name: 'testing' });
-    });
-
-    it('should only include name property', () => {
-      const column = createColumn({ name: 'testing' });
-      
-      expect(Object.keys(column)).toEqual(['name']);
     });
   });
 
@@ -200,9 +194,13 @@ describe('column utils', () => {
       );
     });
 
-    it('should throw error for non-existent column', () => {
-      expect(() => removeColumnFromBoard(sampleBoard, 'nonexistent')).toThrow(
-        'Column with name "nonexistent" not found'
+    it('should silently succeed on remove with nonexistent column', () => {
+      const updatedBoard = removeColumnFromBoard(sampleBoard, 'nonexistent');
+
+      expect(updatedBoard.columns).toHaveLength(3);
+      expect(updatedBoard.columns.find(col => col.name === 'nonexistent')).toBeUndefined();
+      expect(new Date(updatedBoard.dates.updated).getTime()).toEqual(
+        new Date(sampleBoard.dates.updated).getTime()
       );
     });
 

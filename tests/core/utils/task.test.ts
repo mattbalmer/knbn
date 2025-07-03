@@ -136,7 +136,7 @@ describe('task utils', () => {
             }
           }
         },
-        metadata: { nextId: 3, version: '0.1.0' },
+        metadata: { nextId: 3, version: '0.2.0' },
         dates: {
           created: '2024-01-01T09:00:00Z',
           updated: '2024-01-01T09:00:00Z',

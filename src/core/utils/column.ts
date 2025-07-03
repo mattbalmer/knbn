@@ -68,7 +68,7 @@ export const removeColumnFromBoard = (board: Board, columnName: string): Board =
   const columnExists = board.columns.some(column => column.name === columnName);
   
   if (!columnExists) {
-    throw new Error(`Column with name "${columnName}" not found`);
+    return board; // No change if column does not exist
   }
 
   const tasksInColumn = Object.values(board.tasks).filter(task => task.column === columnName);
