@@ -11,8 +11,8 @@ export const extractFilenameFromPath = <Ext extends boolean = false>(filepath: F
 
 export const getFilenameFromBoardName = <Ext extends boolean = true>(boardName: string, options?: { ext?: Ext }): Filename<Ext> => {
   const ext = options?.ext ?? true;
-  const filename = boardName.toLowerCase().replace(/\s+/g, '-');
-  const name = `${filename}` + (ext ? '.knbn' : '');
+  const filenameNormalized = boardName?.toLowerCase().replace(/\s+/g, '-');
+  const name = `${filenameNormalized || ''}` + (ext ? '.knbn' : '');
   return Brands.Filename<Ext>(name);
 }
 

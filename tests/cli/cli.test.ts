@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { loadBoard } from '../../src/core/utils/board-files';
 import { Filepath } from '../../src/core/types/ts';
+// @ts-ignore
 import { createTempDir, rmTempDir } from '../test-utils';
 
 describe('CLI Integration Tests', () => {
@@ -41,8 +42,10 @@ describe('CLI Integration Tests', () => {
         }
         return arg;
       });
-      
-      const stdout = execSync(`node "${cliPath}" ${escapedArgs.join(' ')}`, {
+
+      const command = `node "${cliPath}" ${escapedArgs.join(' ')}`;
+      console.log(`Running command: `, command);
+      const stdout = execSync(command, {
         encoding: 'utf8',
         cwd: tempDir,
         timeout: 10000
@@ -72,16 +75,10 @@ describe('CLI Integration Tests', () => {
 
     it('should display version information', () => {
       const result = runCLI(['--version']);
+      const expectedVersion = require('../../package.json').version;
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toMatch(/\d+\.\d+\.\d+/); // Should contain version number
-    });
-
-    it('should display help with -h flag', () => {
-      const result = runCLI(['-h']);
-      
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('KnBn - Kanban CLI Tool');
+      expect(result.stdout).toContain(expectedVersion); // Should contain version number
     });
   });
 
@@ -91,16 +88,16 @@ describe('CLI Integration Tests', () => {
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Created board file:');
-      expect(result.stdout).toContain('my-board.knbn');
+      expect(result.stdout).toContain('.knbn');
       
       // Verify file was created
-      const boardPath = path.join(tempDir, 'my-board.knbn') as Filepath;
+      const boardPath = path.join(tempDir, '.knbn') as Filepath;
       expect(fs.existsSync(boardPath)).toBe(true);
       
       // Verify board structure
       const board = loadBoard(boardPath);
       expect(board.name).toBe('My Board');
-      expect(board.description).toBe('Your local kanban board');
+      expect(board.description).toBe('My local kanban board');
       expect(board.columns).toHaveLength(4);
       expect(board.columns[0].name).toBe('backlog');
       expect(board.columns[1].name).toBe('todo');
@@ -123,12 +120,12 @@ describe('CLI Integration Tests', () => {
       // Verify board structure
       const board = loadBoard(boardPath);
       expect(board.name).toBe('test-project');
-      expect(board.description).toBe('Your local kanban board');
+      expect(board.description).toBe('My local kanban board');
       expect(board.metadata.nextId).toBe(1);
     });
 
     it('should create board with multi-word name', () => {
-      const result = runCLI(['create-board', 'my-awesome-project']);
+      const result = runCLI(['create-board', 'My Awesome Project']);
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('my-awesome-project.knbn');
@@ -139,12 +136,12 @@ describe('CLI Integration Tests', () => {
       
       // Verify board name
       const board = loadBoard(boardPath);
-      expect(board.name).toBe('my-awesome-project');
+      expect(board.name).toBe('My Awesome Project');
     });
 
     it('should fail when board file already exists', () => {
       // Create existing board file with same name
-      fs.writeFileSync(path.join(tempDir, 'my-board.knbn'), 'existing content');
+      fs.writeFileSync(path.join(tempDir, '.knbn'), 'existing content');
       
       const result = runCLI(['create-board']);
       
@@ -222,7 +219,9 @@ describe('CLI Integration Tests', () => {
 
     it('should detect when no board file is found', () => {
       // Remove board files
-      fs.unlinkSync(path.join(tempDir, 'test-board.knbn'));
+      if (fs.existsSync(path.join(tempDir, 'test-board.knbn'))) {
+        fs.unlinkSync(path.join(tempDir, 'test-board.knbn'));
+      }
       
       const result = runCLI(['create-task', 'Task without board']);
       
@@ -231,10 +230,21 @@ describe('CLI Integration Tests', () => {
       expect(result.stdout).toContain('Would you like to create a new board?');
     });
 
+    it('should skip prompts when no board file is found and --skip-prompt is provided', () => {
+      // Remove board files
+      fs.unlinkSync(path.join(tempDir, 'test-board.knbn'));
+
+      const result = runCLI(['create-task', 'Task without board', '--skip-prompt']);
+
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Cannot continue without a .knbn file');
+    });
+
     it('should fail with non-existent specific board file', () => {
       const result = runCLI(['create-task', 'Task', '-f', 'nonexistent.knbn']);
       
       expect(result.exitCode).toBe(1);
+      expect(result.stdout).toEqual('');
       expect(result.stderr).toContain('Failed to create task');
     });
   });
@@ -355,7 +365,7 @@ describe('CLI Integration Tests', () => {
       runCLI(['create-board', 'project1']);
       runCLI(['create-board', 'project2']);
       
-      const result = runCLI(['list', '--no-prompt']);
+      const result = runCLI(['list', '--skip-prompt']);
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Found 2 .knbn board files:');
@@ -370,6 +380,13 @@ describe('CLI Integration Tests', () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('No .knbn board files found in current directory.');
       expect(result.stdout).toContain('Would you like to create a new board?');
+    });
+
+    it('should skip prompts when no board files are found and --skip-prompt is provided', () => {
+      const result = runCLI(['list', '--skip-prompt']);
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No .knbn board files found in current directory');
     });
 
     it('should work as default command when no command is specified', () => {

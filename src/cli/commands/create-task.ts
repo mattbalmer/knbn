@@ -7,12 +7,13 @@ export const attachCreateTask = (program: Command) =>
     .command('create-task <title>')
     .description('Create a new task')
     .option('-f, --file <path>', 'Specify a board file to use')
-    .option('--no-prompt', 'Skip prompts for board creation')
+    .option('--skip-prompt', 'Skip prompts for board creation', false)
     .action(async (title, options: {
       file?: string;
-      noPrompt?: boolean;
+      skipPrompt?: boolean;
     }) => {
-      const boardFile = await ensureBoardFile(options.file, options.noPrompt);
+      console.error('wtf', options);
+      const boardFile = await ensureBoardFile(options.file, options.skipPrompt);
 
       try {
         const taskTitle = title || 'New Task';

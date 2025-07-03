@@ -9,8 +9,8 @@ export function createBoard(boardData: CreateBoardParams): Board {
   const now = getNow();
 
   return {
-    name: boardData.name ?? 'Your Board',
-    description: boardData.description ?? 'Your local kanban board',
+    name: boardData.name ?? 'My Board',
+    description: boardData.description ?? 'My local kanban board',
     columns: boardData.columns ?? [{ name: 'backlog' }, { name: 'todo' }, { name: 'working' }, { name: 'done' }],
     labels: boardData.labels ?? undefined,
     tasks: boardData.tasks ?? {},

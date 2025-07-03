@@ -5,7 +5,7 @@ import { findBoardFiles } from '../../core/actions/board';
 import { loadBoardFields } from '../../core/utils/board-files';
 
 const listBoards = async (options: {
-  noPrompt?: boolean;
+  skipPrompt?: boolean;
 }) => {
   const cwd = pcwd();
   const files = findBoardFiles(cwd);
@@ -22,7 +22,7 @@ const listBoards = async (options: {
       });
   } else {
     console.log('No .knbn board files found in current directory.');
-    await promptForBoardCreation(options.noPrompt);
+    await promptForBoardCreation(options.skipPrompt);
   }
 
   console.log('\nUse -h for help and available commands.');
@@ -32,15 +32,19 @@ export const attachListBoards = (program: Command) =>
   program
     .command('list')
     .description('List board files')
-    .option('--no-prompt', 'Skip prompts for board creation')
-    .action(async (args, options: {
-      noPrompt?: boolean;
+    .option('--skip-prompt', 'Skip prompts for board creation')
+    .action(async (options: {
+      skipPrompt?: boolean;
     }) => {
+      console.error('wtf', options);
       await listBoards(options);
     });
 
 export const attachDefault = (program: Command) =>
-  program.action(async (options) => {
-    await listBoards(options);
-    console.log('\nUse -h for help and available commands.');
-  });
+  program
+    .action(async () => {
+      await listBoards({
+        skipPrompt: true,
+      });
+      console.log('\nUse -h for help and available commands.');
+    });

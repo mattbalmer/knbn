@@ -27,13 +27,9 @@ export const createBoard = (filePath: Filepath<'abs'>, boardData: boardUtils.Cre
   if (fs.existsSync(filePath)) {
     throw new Error(`Board file ${filePath} already exists`);
   }
-  const fileName = extractFilenameFromPath(filePath, { ext: false });
 
   // Then create the board
-  const board = boardUtils.createBoard({
-    ...boardData,
-    name: boardData.name || fileName,
-  });
+  const board = boardUtils.createBoard(boardData);
 
   // Add an initial task, for fun (if no tasks are provided)
   if (!board.tasks || Object.keys(board.tasks).length === 0) {
