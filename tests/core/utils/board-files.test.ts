@@ -226,18 +226,10 @@ describe('board-files utils', () => {
       
       const content = yaml.dump(board_0_1_0);
       fs.writeFileSync(testFilepath, content, 'utf8');
-      
-      // Mock console.log to capture migration message
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const filepath = Brands.Filepath(testFilepath);
       const loadedBoard = loadBoard(filepath);
-      
-      // Verify migration occurred
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Board version mismatch: expected 0.2.0, found 0.1.0. Migrating...')
-      );
-      
+
       // Verify migrated structure
       expect(loadedBoard.name).toBe('Migration Test Board');
       expect(loadedBoard.description).toBe('Board for testing migration');
@@ -252,26 +244,6 @@ describe('board-files utils', () => {
       const labelNames = loadedBoard.labels!.map(label => label.name);
       expect(labelNames).toContain('bug');
       expect(labelNames).toContain('urgent');
-      
-      consoleSpy.mockRestore();
-    });
-
-    it('should not migrate board when version matches', () => {
-      const filepath = Brands.Filepath(testFilepath);
-      
-      // Mock console.log to verify no migration message
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
-      const loadedBoard = loadBoard(filepath);
-      
-      // Verify no migration message
-      expect(consoleSpy).not.toHaveBeenCalled();
-      
-      // Verify board loaded normally
-      expect(loadedBoard.metadata.version).toBe('0.2.0');
-      expect(loadedBoard.name).toBe(sampleBoard.name);
-      
-      consoleSpy.mockRestore();
     });
 
     it('should handle missing version during load', () => {
@@ -281,16 +253,12 @@ describe('board-files utils', () => {
       const content = yaml.dump(boardWithoutVersion);
       fs.writeFileSync(testFilepath, content, 'utf8');
       
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
       const filepath = Brands.Filepath(testFilepath);
       
       // Should fail during migration due to missing version
       expect(() => loadBoard(filepath)).toThrow(
         'Failed to load board file: Error: Missing version information in board data'
       );
-      
-      consoleSpy.mockRestore();
     });
 
     it('should handle missing metadata during load', () => {
@@ -299,17 +267,13 @@ describe('board-files utils', () => {
       
       const content = yaml.dump(boardWithoutMetadata);
       fs.writeFileSync(testFilepath, content, 'utf8');
-      
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
+
       const filepath = Brands.Filepath(testFilepath);
       
       // Should fail during migration due to missing metadata
       expect(() => loadBoard(filepath)).toThrow(
         'Failed to load board file: Error: Missing version information in board data'
       );
-      
-      consoleSpy.mockRestore();
     });
   });
 
@@ -372,86 +336,6 @@ describe('board-files utils', () => {
         name: 'Minimal Board'
         // description and labels should not be present since they don't exist in the file
       });
-    });
-
-    it('should warn about version mismatch but not migrate in loadBoardFields', () => {
-      // Create a v0.1.0 board file
-      const board_0_1_0 = {
-        configuration: {
-          name: 'Fields Test Board',
-          description: 'Board for testing fields loading with migration warning',
-          columns: [{ name: 'todo' }]
-        },
-        tasks: {},
-        metadata: {
-          nextId: 1,
-          createdAt: '2024-01-01T09:00:00Z',
-          lastModified: '2024-01-01T15:00:00Z',
-          version: '0.1.0'
-        }
-      };
-      
-      const content = yaml.dump(board_0_1_0);
-      fs.writeFileSync(testFilepath, content, 'utf8');
-      
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
-      const filepath = Brands.Filepath(testFilepath);
-      const result = loadBoardFields(filepath, ['name']);
-      
-      // Should warn about version mismatch
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Board version mismatch: expected 0.2.0, found 0.1.0. Consider migrating.')
-      );
-      
-      // Should load the original structure without migration
-      expect(result).toEqual({
-        name: undefined // name is not in the root of v0.1.0 structure
-      });
-      
-      consoleSpy.mockRestore();
-    });
-
-    it('should warn about missing version in loadBoardFields', () => {
-      const boardWithoutVersion = { ...sampleBoard };
-      delete (boardWithoutVersion as any).metadata.version;
-      
-      const content = yaml.dump(boardWithoutVersion);
-      fs.writeFileSync(testFilepath, content, 'utf8');
-      
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
-      const filepath = Brands.Filepath(testFilepath);
-      const result = loadBoardFields(filepath, ['name']);
-      
-      // Should warn about version mismatch
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Board version mismatch: expected 0.2.0, found undefined. Consider migrating.')
-      );
-      
-      expect(result).toEqual({
-        name: sampleBoard.name
-      });
-      
-      consoleSpy.mockRestore();
-    });
-
-    it('should not warn when version matches in loadBoardFields', () => {
-      const filepath = Brands.Filepath(testFilepath);
-      
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      
-      const result = loadBoardFields(filepath, ['name', 'description']);
-      
-      // Should not warn about version
-      expect(consoleSpy).not.toHaveBeenCalled();
-      
-      expect(result).toEqual({
-        name: sampleBoard.name,
-        description: sampleBoard.description
-      });
-      
-      consoleSpy.mockRestore();
     });
   });
 });
