@@ -4,6 +4,7 @@ import * as yaml from 'js-yaml';
 import { findBoardFiles, createBoard } from '../../../src/core/actions/board';
 import { Board } from '../../../src/core/types/knbn';
 import { Brands } from '../../../src/core/utils/ts';
+// @ts-ignore
 import { createTempDir } from '../../test-utils';
 
 describe('board actions', () => {

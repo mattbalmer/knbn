@@ -10,6 +10,7 @@ import {
 } from '../../../src/core/actions/label';
 import { Board } from '../../../src/core/types/knbn';
 import { Brands } from '../../../src/core/utils/ts';
+// @ts-ignore
 import { createTempDir } from '../../test-utils';
 
 describe('label actions', () => {

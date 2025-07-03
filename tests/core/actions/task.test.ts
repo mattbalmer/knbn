@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
-import { getTask, findTasks, createTask, updateTask } from '../../../src/core/actions/task';
-import { createBoard } from '../../../src/core/actions/board';
-import { Board, Task } from '../../../src/core/types/knbn';
+import { createTask, findTasks, getTask, updateTask } from '../../../src/core/actions/task';
+import { Board } from '../../../src/core/types/knbn';
 import { Brands } from '../../../src/core/utils/ts';
+// @ts-ignore
 import { createTempDir } from '../../test-utils';
 
 describe('task actions', () => {
