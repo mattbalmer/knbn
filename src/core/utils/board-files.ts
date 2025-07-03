@@ -2,6 +2,8 @@ import { Board, Filepath } from '../types';
 import { getNow } from './misc';
 import * as yaml from 'js-yaml';
 import fs from 'fs';
+import { KNBN_BOARD_VERSION } from '../constants';
+import { migrateBoard } from './migrations';
 
 export const saveBoard = (filePath: Filepath, board: Board): void => {
   // TODO: validate board and path
@@ -37,6 +39,12 @@ export const loadBoard = (filepath: Filepath): Board => {
       throw new Error('Invalid board file format');
     }
 
+    const boardVersion = data.metadata?.version;
+    if (!boardVersion || boardVersion !== KNBN_BOARD_VERSION) {
+      console.log(`Board version mismatch: expected ${KNBN_BOARD_VERSION}, found ${boardVersion}. Migrating...`);
+      return migrateBoard(data);
+    }
+
     return {
       name: data.name,
       description: data.description,
@@ -61,6 +69,11 @@ export const loadBoardFields = <K extends keyof Board>(filePath: Filepath, keys:
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     const data = yaml.load(content) as Board;
+
+    const boardVersion = data.metadata?.version;
+    if (!boardVersion || boardVersion !== KNBN_BOARD_VERSION) {
+      console.log(`Board version mismatch: expected ${KNBN_BOARD_VERSION}, found ${boardVersion}. Consider migrating.`);
+    }
 
     const board: Pick<Board, K> = Object.entries(data)
       .filter(([key]) => keys.includes(key as K))
