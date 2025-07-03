@@ -66,14 +66,14 @@ export const removeLabelFromBoard = (board: Board, labelName: string): Board => 
   const labels = board.labels || [];
   const labelNameLower = labelName.toLowerCase();
   const labelExists = labels.some(label => label.name.toLowerCase() === labelNameLower);
-  
+
   if (!labelExists) {
     return board;
   }
 
   return {
     ...board,
-    labels: labels.filter(label => label.name !== labelName),
+    labels: labels.filter(label => label.name.toLowerCase() !== labelName.toLowerCase()),
     dates: {
       ...board.dates,
       updated: getNow(),
@@ -97,7 +97,7 @@ export const findLabels = (board: Board, query: string): Label[] => {
 
   return board.labels
     ?.filter((label) =>
-      label.name.toLowerCase().includes(queryLower) || label.color?.toLowerCase().includes(queryLower)
+      label.name.toLowerCase().includes(queryLower)
     )
     ?? [];
 }

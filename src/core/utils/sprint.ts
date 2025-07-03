@@ -11,7 +11,7 @@ export function createSprint(sprintData: CreateSprintParams): Sprint {
     description: sprintData.description,
     capacity: sprintData.capacity,
     dates: {
-      created: now,
+      created: sprintData.dates?.created ||now,
       starts: sprintData.dates?.starts || now,
       ends: sprintData.dates?.ends,
     },

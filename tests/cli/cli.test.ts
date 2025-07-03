@@ -44,7 +44,7 @@ describe('CLI Integration Tests', () => {
       });
 
       const command = `node "${cliPath}" ${escapedArgs.join(' ')}`;
-      console.log(`Running command: `, command);
+      // console.log(`Running command: `, command);
       const stdout = execSync(command, {
         encoding: 'utf8',
         cwd: tempDir,

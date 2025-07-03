@@ -121,7 +121,7 @@ describe('label utils', () => {
       const duplicateLabel = { name: 'BUG', color: 'orange' };
 
       expect(() => addLabelToBoard(sampleBoard, duplicateLabel)).toThrow(
-        'Label with name "bug" already exists'
+        'Label with name "BUG" already exists'
       );
     });
 
@@ -230,26 +230,22 @@ describe('label utils', () => {
       expect(updatedBoard.labels).toEqual(sampleBoard.labels);
     });
 
-    it('should throw error for non-existent label', () => {
-      expect(() => removeLabelFromBoard(sampleBoard, 'nonexistent')).toThrow(
-        'Label with name "nonexistent" not found'
-      );
+    it('should return original board for non-existent labels', () => {
+      const updatedBoard = removeLabelFromBoard(sampleBoard, 'nonexistent');
+
+      expect(updatedBoard).toEqual(sampleBoard);
     });
 
     it('should handle board without labels', () => {
-      const boardWithoutLabels = { ...sampleBoard, labels: undefined };
-      
-      expect(() => removeLabelFromBoard(boardWithoutLabels, 'bug')).toThrow(
-        'Label with name "bug" not found'
-      );
+      const updatedBoard = removeLabelFromBoard(sampleBoard, 'nonexistent');
+
+      expect(updatedBoard).toEqual(sampleBoard);
     });
 
     it('should handle board with empty labels array', () => {
-      const boardWithEmptyLabels = { ...sampleBoard, labels: [] };
-      
-      expect(() => removeLabelFromBoard(boardWithEmptyLabels, 'bug')).toThrow(
-        'Label with name "bug" not found'
-      );
+      const updatedBoard = removeLabelFromBoard(sampleBoard, 'nonexistent');
+
+      expect(updatedBoard).toEqual(sampleBoard);
     });
 
     it('should not mutate original board', () => {

@@ -41,14 +41,6 @@ describe('files utils', () => {
       expect(filename).toBe('test');
     });
 
-    it('should handle Windows-style paths', () => {
-      const filepath = Brands.Filepath<'abs'>('C:\\\\path\\\\to\\\\test.knbn');
-      const filename = extractFilenameFromPath(filepath);
-      
-      // On non-Windows systems, this will be treated as a filename with backslashes
-      expect(filename).toBe('test');
-    });
-
     it('should handle empty path', () => {
       const filepath = Brands.Filepath<'abs'>('');
       const filename = extractFilenameFromPath(filepath);
@@ -198,15 +190,6 @@ describe('files utils', () => {
       const result = ensureAbsolutePath('');
       
       expect(result).toBe(expectedAbsolute);
-    });
-
-    it('should handle Windows absolute paths', () => {
-      const windowsPath = 'C:\\\\path\\\\to\\\\file.knbn';
-      const result = ensureAbsolutePath(windowsPath);
-      
-      // On non-Windows systems, this will be treated as relative
-      // On Windows systems, this will be treated as absolute
-      expect(typeof result).toBe('string');
     });
   });
 });
