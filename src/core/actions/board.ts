@@ -2,14 +2,13 @@ import * as boardUtils from '../utils/board';
 import { Board } from '../types';
 import fs from 'fs';
 import path from 'path';
-import { extractFilenameFromPath } from '../utils/files';
 import { Dirpath, Filepath } from '../types';
 import { Brands } from '../utils/ts';
 import { saveBoard } from '../utils/board-files';
 
-export const findBoardFiles = (dirPath: Dirpath<'abs'>): Filepath<'abs'>[] => {
+export const findBoardFiles = (dirpath: Dirpath<'abs'>): Filepath<'abs'>[] => {
   const possibleFiles = [
-    ...fs.readdirSync(dirPath).filter(file => file.endsWith('.knbn'))
+    ...fs.readdirSync(dirpath).filter(file => file.endsWith('.knbn'))
   ];
 
   // If ".knbn" exists, it should be the first file
@@ -19,7 +18,7 @@ export const findBoardFiles = (dirPath: Dirpath<'abs'>): Filepath<'abs'>[] => {
     return 0;
   });
 
-  return orderedFiles.map(file => Brands.Filepath(path.join(dirPath, file)));
+  return orderedFiles.map(file => Brands.Filepath(path.join(dirpath, file)));
 }
 
 export const createBoard = (filePath: Filepath<'abs'>, boardData: boardUtils.CreateBoardParams): Board => {
