@@ -37,7 +37,7 @@ describe('CLI Integration Tests', () => {
     try {
       // Properly escape arguments for shell execution
       const escapedArgs = args.map(arg => {
-        if (arg.includes(' ') || arg.includes('"') || arg.includes("'")) {
+        if (arg.includes(' ') || arg.includes('"') || arg.includes("'") || arg.startsWith("#")) {
           return `"${arg.replace(/"/g, '\\"')}"`;
         }
         return arg;
@@ -482,6 +482,472 @@ describe('CLI Integration Tests', () => {
       expect(new Date(updatedBoard.dates.saved).getTime()).toBeGreaterThan(
         new Date(initialModified).getTime()
       );
+    });
+  });
+
+  // MISSING CLI COMMAND TESTS
+
+  describe('get-task command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['create-task', 'Test Task', '-f', 'test-board.knbn']);
+    });
+
+    it('should get task details by ID', () => {
+      const result = runCLI(['get-task', '1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Task #1: Test Task');
+      expect(result.stdout).toContain('Column: backlog');
+      expect(result.stdout).toContain('Created:');
+      expect(result.stdout).toContain('Updated:');
+    });
+
+    it('should fail with non-existent task ID', () => {
+      const result = runCLI(['get-task', '999', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Task #999 not found');
+    });
+
+    it('should fail with invalid task ID', () => {
+      const result = runCLI(['get-task', 'invalid', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Task ID must be a number');
+    });
+  });
+
+  describe('list-tasks command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['create-task', 'Task 1', '-f', 'test-board.knbn']);
+      runCLI(['create-task', 'Task 2', '-f', 'test-board.knbn']);
+      runCLI(['update-task', '2', '--column', 'todo', '-f', 'test-board.knbn']);
+    });
+
+    it('should list all tasks', () => {
+      const result = runCLI(['list-tasks', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 2 task(s)');
+      expect(result.stdout).toContain('#1: Task 1');
+      expect(result.stdout).toContain('#2: Task 2');
+    });
+
+    it('should filter tasks by column', () => {
+      const result = runCLI(['list-tasks', '--column', 'todo', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 1 task(s)');
+      expect(result.stdout).toContain('#2: Task 2');
+      expect(result.stdout).not.toContain('#1: Task 1');
+    });
+
+    it('should search tasks by query', () => {
+      const result = runCLI(['list-tasks', '--query', 'Task 1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('#1: Task 1');
+      expect(result.stdout).not.toContain('#2: Task 2');
+    });
+
+    it('should show no tasks found message', () => {
+      const result = runCLI(['list-tasks', '--column', 'nonexistent', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No tasks found');
+    });
+  });
+
+  describe('list-columns command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['create-task', 'Task 1', '-f', 'test-board.knbn']);
+    });
+
+    it('should list all columns', () => {
+      const result = runCLI(['list-columns', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 4 column(s)');
+      expect(result.stdout).toContain('1. backlog');
+      expect(result.stdout).toContain('2. todo');
+      expect(result.stdout).toContain('3. working');
+      expect(result.stdout).toContain('4. done');
+    });
+
+    it('should show task counts when --count flag is used', () => {
+      const result = runCLI(['list-columns', '--count', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Tasks: 1'); // backlog has 1 task
+      expect(result.stdout).toContain('Tasks: 0'); // other columns have 0 tasks
+    });
+  });
+
+  describe('create-column command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+    });
+
+    it('should create a new column', () => {
+      const result = runCLI(['create-column', 'review', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created column: review');
+      
+      // Verify column was added
+      const listResult = runCLI(['list-columns', '-f', 'test-board.knbn']);
+      expect(listResult.stdout).toContain('review');
+    });
+
+    it('should create column at specific position', () => {
+      const result = runCLI(['create-column', 'review', '--position', '2', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created column: review');
+      expect(result.stdout).toContain('Position: 2');
+    });
+
+    it('should fail with duplicate column name', () => {
+      const result = runCLI(['create-column', 'backlog', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Column with name "backlog" already exists');
+    });
+
+    it('should fail with invalid position', () => {
+      const result = runCLI(['create-column', 'review', '--position', '-1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Position must be a non-negative number');
+    });
+  });
+
+  describe('update-column command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+    });
+
+    it('should update column name', () => {
+      const result = runCLI(['update-column', 'backlog', '--name', 'new-backlog', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Updated column: new-backlog');
+      expect(result.stdout).toContain('Renamed from: backlog');
+    });
+
+    it('should fail with non-existent column', () => {
+      const result = runCLI(['update-column', 'nonexistent', '--name', 'new-name', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Column "nonexistent" not found');
+    });
+
+    it('should show message when no updates specified', () => {
+      const result = runCLI(['update-column', 'backlog', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No updates specified');
+    });
+  });
+
+  describe('remove-column command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['create-column', 'temp', '-f', 'test-board.knbn']);
+    });
+
+    it('should remove empty column', () => {
+      const result = runCLI(['remove-column', 'temp', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Removed column: temp');
+    });
+
+    it('should fail to remove column with tasks', () => {
+      runCLI(['create-task', 'Test Task', '-f', 'test-board.knbn']); // Goes to backlog
+      
+      const result = runCLI(['remove-column', 'backlog', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Cannot remove column "backlog" because it contains 1 task(s)');
+    });
+
+    it('should show message for non-existent column', () => {
+      const result = runCLI(['remove-column', 'nonexistent', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Column "nonexistent" was not found');
+    });
+  });
+
+  describe('move-column command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+    });
+
+    it('should move column to new position', () => {
+      const result = runCLI(['move-column', 'done', '0', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Moved column "done" to position 0');
+    });
+
+    it('should fail with non-existent column', () => {
+      const result = runCLI(['move-column', 'nonexistent', '0', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Column with name "nonexistent" not found');
+    });
+
+    it('should fail with invalid position', () => {
+      const result = runCLI(['move-column', 'done', '-1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Position must be a non-negative number');
+    });
+  });
+
+  describe('list-labels command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['add-label', 'bug', '-f', 'test-board.knbn']);
+      runCLI(['add-label', 'feature', '--color', 'green', '-f', 'test-board.knbn']);
+    });
+
+    it('should list all labels', () => {
+      const result = runCLI(['list-labels', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 2 label(s)');
+      expect(result.stdout).toContain('1. bug');
+      expect(result.stdout).toContain('2. feature');
+      expect(result.stdout).toContain('Color: green');
+    });
+
+    it('should show no labels found message', () => {
+      runCLI(['create-board', 'empty-board']);
+      const result = runCLI(['list-labels', '-f', 'empty-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No labels found');
+    });
+  });
+
+  describe('add-label command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+    });
+
+    it('should create a new label', () => {
+      const result = runCLI(['add-label', 'bug', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created label: bug');
+    });
+
+    it('should create label with color', () => {
+      const result = runCLI(['add-label', 'feature', '--color', '#fffccc', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created label: feature');
+      expect(result.stdout).toContain('Color: #fffccc');
+    });
+
+    it('should fail with duplicate label name', () => {
+      runCLI(['add-label', 'bug', '-f', 'test-board.knbn']);
+      const result = runCLI(['add-label', 'bug', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Label with name "bug" already exists');
+    });
+  });
+
+  describe('update-label command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['add-label', 'bug', '-f', 'test-board.knbn']);
+    });
+
+    it('should update label name', () => {
+      const result = runCLI(['update-label', 'bug', '--name', 'critical', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Updated label: critical');
+      expect(result.stdout).toContain('Renamed from: bug');
+    });
+
+    it('should update label color', () => {
+      const result = runCLI(['update-label', 'bug', '--color', 'red', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Updated label: bug');
+      expect(result.stdout).toContain('Color: red');
+    });
+
+    it('should fail with non-existent label', () => {
+      const result = runCLI(['update-label', 'nonexistent', '--name', 'new-name', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Label "nonexistent" not found');
+    });
+
+    it('should show message when no updates specified', () => {
+      const result = runCLI(['update-label', 'bug', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No updates specified');
+    });
+  });
+
+  describe('remove-label command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['add-label', 'bug', '-f', 'test-board.knbn']);
+    });
+
+    it('should remove label', () => {
+      const result = runCLI(['remove-label', 'bug', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Removed label: bug');
+    });
+
+    it('should fail with non-existent label', () => {
+      const result = runCLI(['remove-label', 'nonexistent', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Label "nonexistent" not found');
+    });
+  });
+
+  describe('list-sprints command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['add-sprint', 'Sprint 1', '-f', 'test-board.knbn']);
+      runCLI(['add-sprint', 'Sprint 2', '--capacity', '40', '-f', 'test-board.knbn']);
+    });
+
+    it('should list all sprints', () => {
+      const result = runCLI(['list-sprints', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Found 2 sprint(s)');
+      expect(result.stdout).toContain('1. Sprint 1');
+      expect(result.stdout).toContain('2. Sprint 2');
+      expect(result.stdout).toContain('Capacity: 40');
+    });
+
+    it('should show no sprints found message', () => {
+      runCLI(['create-board', 'empty-board']);
+      const result = runCLI(['list-sprints', '-f', 'empty-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No sprints found');
+    });
+  });
+
+  describe('add-sprint command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+    });
+
+    it('should create a new sprint', () => {
+      const result = runCLI(['add-sprint', 'Sprint 1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created sprint: Sprint 1');
+      expect(result.stdout).toContain('Starts:');
+    });
+
+    it('should create sprint with capacity', () => {
+      const result = runCLI(['add-sprint', 'Sprint 1', '--capacity', '40', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created sprint: Sprint 1');
+      expect(result.stdout).toContain('Capacity: 40');
+    });
+
+    it('should create sprint with description', () => {
+      const result = runCLI(['add-sprint', 'Sprint 1', '--description', 'Test sprint', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Created sprint: Sprint 1');
+      expect(result.stdout).toContain('Description: Test sprint');
+    });
+
+    it('should fail with duplicate sprint name', () => {
+      runCLI(['add-sprint', 'Sprint 1', '-f', 'test-board.knbn']);
+      const result = runCLI(['add-sprint', 'Sprint 1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Sprint with name "Sprint 1" already exists');
+    });
+
+    it('should fail with invalid capacity', () => {
+      const result = runCLI(['add-sprint', 'Sprint 1', '--capacity', '-1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Capacity must be a non-negative number');
+    });
+  });
+
+  describe('update-sprint command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['add-sprint', 'Sprint 1', '-f', 'test-board.knbn']);
+    });
+
+    it('should update sprint name', () => {
+      const result = runCLI(['update-sprint', 'Sprint 1', '--name', 'Updated Sprint', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Updated sprint: Updated Sprint');
+    });
+
+    it('should update sprint capacity', () => {
+      const result = runCLI(['update-sprint', 'Sprint 1', '--capacity', '60', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Updated sprint: Sprint 1');
+      expect(result.stdout).toContain('Capacity: 60');
+    });
+
+    it('should fail with non-existent sprint', () => {
+      const result = runCLI(['update-sprint', 'nonexistent', '--name', 'new-name', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Sprint with name "nonexistent" not found');
+    });
+
+    it('should show message when no updates specified', () => {
+      const result = runCLI(['update-sprint', 'Sprint 1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No updates specified');
+    });
+  });
+
+  describe('remove-sprint command', () => {
+    beforeEach(() => {
+      runCLI(['create-board', 'test-board']);
+      runCLI(['add-sprint', 'Sprint 1', '-f', 'test-board.knbn']);
+    });
+
+    it('should remove sprint', () => {
+      const result = runCLI(['remove-sprint', 'Sprint 1', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('Removed sprint: Sprint 1');
+    });
+
+    it('should fail with non-existent sprint', () => {
+      const result = runCLI(['remove-sprint', 'nonexistent', '-f', 'test-board.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Sprint "nonexistent" not found');
     });
   });
 });
