@@ -1,53 +1,7 @@
-export interface Task_0_2_0 {
-  id: number;
-  title: string;
-  description: string;
-  column: string;
-  sprint?: string;
-  labels?: string[];
-  storyPoints?: number;
-  priority?: number;
-  dates: {
-    created: string;
-    updated: string;
-    moved?: string;
-  };
-}
+import { Board, Column, Label, Sprint, Task } from '../knbn';
 
-export interface Column_0_2_0 {
-  name: string;
-}
-
-export interface Label_0_2_0 {
-  name: string;
-  color?: string;
-}
-
-export interface Sprint_0_2_0 {
-  name: string;
-  description?: string;
-  capacity?: number;
-  dates: {
-    created: string;
-    starts: string;
-    ends?: string;
-  };
-}
-
-export interface Board_0_2_0 {
-  name: string;
-  description?: string;
-  columns: Column_0_2_0[];
-  tasks: Record<number, Task_0_2_0>;
-  labels?: Label_0_2_0[];
-  sprints?: Sprint_0_2_0[];
-  metadata: {
-    nextId: number;
-    version: string;
-  };
-  dates: {
-    created: string;
-    updated: string;
-    saved: string;
-  };
-}
+export type Task_0_2_0 = Task;
+export type Column_0_2_0 = Column;
+export type Board_0_2_0 = Board;
+export type Sprint_0_2_0 = Sprint;
+export type Label_0_2_0 = Label;
