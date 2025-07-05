@@ -1,6 +1,6 @@
 {
   "name": "knbn",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "boardVersion": "0.2",
   "description": "A simple kanban CLI tool",
   "author": "Matthew Balmer <contact@mattbalmer.com>",
@@ -24,12 +24,12 @@
   "keywords": [
     "knbn",
     "kanban",
-    "cli",
     "typescript"
   ],
   "license": "MIT",
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "knbn-core": "^0.3.3"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

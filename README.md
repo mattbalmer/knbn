@@ -11,6 +11,7 @@ KnBn provides three main ways to interact with kanban boards:
 - **CLI Interface**: (`knbn-cli`) Command-line tools for creating, updating, and managing tasks and boards
 - **Web Interface**: (`knbn-web`) Browser-based UI via the separate `knbn-web` package  
 - **MCP Protocol**: (`knbn-mcp`) AI assistant integration through Model Context Protocol
+- **Core logic**: (`knbn-core`) Core logic and types, which this package passes through
 
 ## Usage
 
