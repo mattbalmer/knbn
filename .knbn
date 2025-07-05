@@ -1,11 +1,10 @@
-configuration:
-  name: KnBn Project Board
-  description: Development board for the KnBn kanban CLI tool
-  columns:
-    - name: backlog
-    - name: todo
-    - name: working
-    - name: done
+name: KnBn Project Board
+description: Development board for the KnBn kanban CLI tool
+columns:
+  - name: backlog
+  - name: todo
+  - name: working
+  - name: done
 tasks:
   '1':
     id: 1
@@ -57,6 +56,7 @@ tasks:
     dates:
       created: '2025-06-30T00:15:58.915Z'
       updated: '2025-06-30T00:15:58.915Z'
+labels: []
 sprints:
   - name: Alpha
     description: Initial alpha release with basic features
@@ -66,6 +66,8 @@ sprints:
       ends: '2025-06-08T23:59:59Z'
 metadata:
   nextId: 7
-  createdAt: '2025-06-29T00:00:00Z'
-  lastModified: '2025-06-30T00:15:58.915Z'
-  version: '0.1'
+  version: '0.2'
+dates:
+  created: '2025-06-29T00:00:00Z'
+  updated: '2025-06-30T00:15:58.915Z'
+  saved: '2025-07-05T00:49:19.997Z'
