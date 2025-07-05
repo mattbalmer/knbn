@@ -1,36 +1,45 @@
-configuration:
-  name: "Test Board"
-  description: "A test kanban board"
-  columns:
-    - name: "backlog"
-    - name: "todo"
-    - name: "doing"
-    - name: "done"
-
+name: "Test Board"
+description: "A test board with sample data"
+columns:
+  - name: "todo"
+  - name: "doing"
+  - name: "done"
 tasks:
   1:
     id: 1
-    title: "Test Task 1"
-    description: "First test task"
+    title: "First Task"
+    description: "This is the first test task"
     column: "todo"
-    labels: ["test", "feature"]
-    assignee: "tester"
-    storyPoints: 3
+    labels:
+      - "test"
+      - "example"
     dates:
       created: "2024-01-01T10:00:00Z"
       updated: "2024-01-01T10:00:00Z"
   2:
     id: 2
-    title: "Test Task 2"
-    description: "Second test task"
-    column: "done"
+    title: "Second Task"
+    description: "This is the second test task"
+    column: "doing"
+    storyPoints: 3
     dates:
       created: "2024-01-01T11:00:00Z"
+      updated: "2024-01-01T11:00:00Z"
+      moved: "2024-01-01T11:30:00Z"
+  3:
+    id: 3
+    title: "Completed Task"
+    description: "This task is already done"
+    column: "done"
+    priority: 1
+    dates:
+      created: "2024-01-01T09:00:00Z"
       updated: "2024-01-01T12:00:00Z"
       moved: "2024-01-01T12:00:00Z"
-
 metadata:
-  nextId: 3
-  createdAt: "2024-01-01T09:00:00Z"
-  lastModified: "2024-01-01T12:00:00Z"
-  version: "0.1.0"
+  nextId: 4
+  version: "0.2"
+dates:
+  created: "2024-01-01T08:00:00Z"
+  updated: "2024-01-01T12:00:00Z"
+  saved: "2024-01-01T12:00:00Z"

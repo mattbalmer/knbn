@@ -9,3 +9,5 @@ tests/
 .knbn
 CLAUDE.md
 jest.config.js
+.yarn/
+.yarnrc.yml
