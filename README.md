@@ -4,6 +4,19 @@ A TypeScript-based CLI for managing advanced TODOs, in a Kanban style, from the 
 
 _This is an early, work-in-progress version of the project. Use accepting risk of breaking changes._
 
+## Overview
+
+KnBn provides three main ways to interact with kanban boards:
+
+- **CLI Interface**: Command-line tools for creating, updating, and managing tasks and boards
+- **Web Interface**: Browser-based UI via the separate `knbn-web` package  
+- **MCP Protocol**: AI assistant integration through Model Context Protocol
+
+For detailed documentation on each component, see:
+- [CLI Documentation](src/cli/README.md) - Command-line usage and examples
+- [Core Documentation](src/core/README.md) - Business logic and utilities  
+- [MCP Documentation](src/mcp/README.md) - AI integration and protocol details
+
 ## Usage
 
 For basic CLI usage, run via npx:

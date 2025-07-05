@@ -1,4 +1,4 @@
-import { createTask, updateTask, sortTasks } from '../../../src/core/utils/task';
+import { createTask, updateTask, updateTasksBatch, sortTasks } from '../../../src/core/utils/task';
 import { Board, Task } from '../../../src/core/types/knbn';
 
 describe('task utils', () => {
@@ -393,6 +393,245 @@ describe('task utils', () => {
       // Priority 2: 5
       // Priority 3: 1
       // No priority (recent first): 2, 6
+    });
+  });
+
+  describe('updateTasksBatch', () => {
+    let sampleBoard: Board;
+
+    beforeEach(() => {
+      sampleBoard = {
+        name: 'Test Board',
+        description: 'Test board',
+        columns: [{ name: 'todo' }, { name: 'doing' }, { name: 'done' }],
+        tasks: {
+          1: {
+            id: 1,
+            title: 'Task One',
+            description: 'First task',
+            column: 'todo',
+            labels: ['bug'],
+            sprint: 'Sprint 1',
+            storyPoints: 3,
+            priority: 2,
+            dates: {
+              created: '2024-01-01T10:00:00Z',
+              updated: '2024-01-01T10:00:00Z',
+              moved: '2024-01-01T10:00:00Z'
+            }
+          },
+          2: {
+            id: 2,
+            title: 'Task Two',
+            description: 'Second task',
+            column: 'doing',
+            dates: {
+              created: '2024-01-01T11:00:00Z',
+              updated: '2024-01-01T11:00:00Z'
+            }
+          },
+          3: {
+            id: 3,
+            title: 'Task Three',
+            description: 'Third task',
+            column: 'todo',
+            priority: 1,
+            dates: {
+              created: '2024-01-01T12:00:00Z',
+              updated: '2024-01-01T12:00:00Z'
+            }
+          }
+        },
+        metadata: { nextId: 4, version: '0.2.0' },
+        dates: {
+          created: '2024-01-01T09:00:00Z',
+          updated: '2024-01-01T09:00:00Z',
+          saved: '2024-01-01T09:00:00Z'
+        }
+      };
+    });
+
+    it('should update multiple tasks at once', () => {
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Updated Task One', column: 'doing' },
+        2: { priority: 1, storyPoints: 5 },
+        3: { column: 'done', labels: ['feature'] }
+      };
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1].title).toBe('Updated Task One');
+      expect(updatedTasks[1].column).toBe('doing');
+      expect(updatedTasks[1].id).toBe(1);
+
+      expect(updatedTasks[2].priority).toBe(1);
+      expect(updatedTasks[2].storyPoints).toBe(5);
+      expect(updatedTasks[2].title).toBe('Task Two'); // preserved
+
+      expect(updatedTasks[3].column).toBe('done');
+      expect(updatedTasks[3].labels).toEqual(['feature']);
+      expect(updatedTasks[3].priority).toBe(1); // preserved
+
+      expect(updatedBoard.tasks[1]).toEqual(updatedTasks[1]);
+      expect(updatedBoard.tasks[2]).toEqual(updatedTasks[2]);
+      expect(updatedBoard.tasks[3]).toEqual(updatedTasks[3]);
+    });
+
+    it('should update task and board timestamps', () => {
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Updated Title' },
+        2: { column: 'done' }
+      };
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      const now = new Date().getTime();
+      const task1Updated = new Date(updatedTasks[1].dates.updated).getTime();
+      const task2Updated = new Date(updatedTasks[2].dates.updated).getTime();
+      const boardUpdated = new Date(updatedBoard.dates.updated).getTime();
+
+      expect(task1Updated).toBeGreaterThan(new Date(sampleBoard.tasks[1].dates.updated).getTime());
+      expect(task2Updated).toBeGreaterThan(new Date(sampleBoard.tasks[2].dates.updated).getTime());
+      expect(boardUpdated).toBeGreaterThan(new Date(sampleBoard.dates.updated).getTime());
+
+      expect(task1Updated).toBeLessThanOrEqual(now);
+      expect(task2Updated).toBeLessThanOrEqual(now);
+      expect(boardUpdated).toBeLessThanOrEqual(now);
+    });
+
+    it('should update moved date when column changes', () => {
+      const updates: Record<number, Partial<Task>> = {
+        1: { column: 'done' },
+        2: { title: 'New Title' } // no column change
+      };
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1].dates.moved).toBeDefined();
+      expect(new Date(updatedTasks[1].dates.moved!).getTime()).toBeGreaterThan(
+        new Date(sampleBoard.tasks[1].dates.moved!).getTime()
+      );
+
+      expect(updatedTasks[2].dates.moved).toBeUndefined(); // task 2 had no moved date originally
+    });
+
+    it('should preserve task IDs', () => {
+      const updates: Record<number, Partial<Task>> = {
+        1: { id: 999, title: 'Try to change ID' },
+        2: { id: 888, description: 'Try to change ID too' }
+      };
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1].id).toBe(1);
+      expect(updatedTasks[2].id).toBe(2);
+    });
+
+    it('should preserve created dates', () => {
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Updated' },
+        2: { title: 'Also Updated' }
+      };
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1].dates.created).toBe(sampleBoard.tasks[1].dates.created);
+      expect(updatedTasks[2].dates.created).toBe(sampleBoard.tasks[2].dates.created);
+    });
+
+    it('should throw error for non-existent task', () => {
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Valid update' },
+        999: { title: 'Invalid task ID' }
+      };
+
+      expect(() => updateTasksBatch(sampleBoard, updates)).toThrow(
+        'Task with ID 999 not found on the board.'
+      );
+    });
+
+    it('should handle single task update', () => {
+      const updates: Record<number, Partial<Task>> = {
+        2: { title: 'Single Update', priority: 3 }
+      };
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      expect(Object.keys(updatedTasks)).toEqual(['2']);
+      expect(updatedTasks[2].title).toBe('Single Update');
+      expect(updatedTasks[2].priority).toBe(3);
+
+      expect(updatedBoard.tasks[1]).toEqual(sampleBoard.tasks[1]); // unchanged
+      expect(updatedBoard.tasks[3]).toEqual(sampleBoard.tasks[3]); // unchanged
+    });
+
+    it('should handle empty updates record', () => {
+      const updates: Record<number, Partial<Task>> = {};
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      expect(Object.keys(updatedTasks)).toEqual([]);
+      expect(updatedBoard.tasks).toEqual(sampleBoard.tasks);
+      
+      // Board should still have updated timestamp
+      expect(new Date(updatedBoard.dates.updated).getTime()).toBeGreaterThanOrEqual(
+        new Date(sampleBoard.dates.updated).getTime()
+      );
+    });
+
+    it('should not mutate original board', () => {
+      const originalTasks = { ...sampleBoard.tasks };
+      const originalDates = { ...sampleBoard.dates };
+
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Mutate Test' }
+      };
+
+      updateTasksBatch(sampleBoard, updates);
+
+      expect(sampleBoard.tasks).toEqual(originalTasks);
+      expect(sampleBoard.dates).toEqual(originalDates);
+    });
+
+    it('should handle partial task updates', () => {
+      const updates: Record<number, Partial<Task>> = {
+        1: { description: 'New description only' },
+        2: { labels: ['urgent', 'bug'] },
+        3: { storyPoints: 8 }
+      };
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1].description).toBe('New description only');
+      expect(updatedTasks[1].title).toBe('Task One'); // preserved
+      expect(updatedTasks[1].column).toBe('todo'); // preserved
+
+      expect(updatedTasks[2].labels).toEqual(['urgent', 'bug']);
+      expect(updatedTasks[2].title).toBe('Task Two'); // preserved
+
+      expect(updatedTasks[3].storyPoints).toBe(8);
+      expect(updatedTasks[3].priority).toBe(1); // preserved
+    });
+
+    it('should return updated tasks in same format as board tasks', () => {
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Format Test' },
+        2: { priority: 5 }
+      };
+
+      const result = updateTasksBatch(sampleBoard, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1]).toEqual(updatedBoard.tasks[1]);
+      expect(updatedTasks[2]).toEqual(updatedBoard.tasks[2]);
     });
   });
 });

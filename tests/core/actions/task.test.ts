@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
-import { createTask, findTasks, getTask, updateTask } from '../../../src/core/actions/task';
-import { Board } from '../../../src/core/types/knbn';
+import { createTask, findTasks, getTask, updateTask, updateTasksBatch } from '../../../src/core/actions/task';
+import { Board, Task } from '../../../src/core/types/knbn';
 import { Brands } from '../../../src/core/utils/ts';
 // @ts-ignore
 import { createTempDir } from '../../test-utils';
@@ -428,6 +428,243 @@ describe('task actions', () => {
       
       expect(updatedBoard.tasks[2]).toEqual(sampleBoard.tasks[2]);
       expect(updatedBoard.tasks[3]).toEqual(sampleBoard.tasks[3]);
+    });
+  });
+
+  describe('updateTasksBatch', () => {
+    it('should update multiple tasks and save to file', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Batch Updated Task 1', column: 'doing' },
+        2: { priority: 5, storyPoints: 8 },
+        3: { column: 'todo', labels: ['reopened'] }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1].title).toBe('Batch Updated Task 1');
+      expect(updatedTasks[1].column).toBe('doing');
+      expect(updatedTasks[2].priority).toBe(5);
+      expect(updatedTasks[2].storyPoints).toBe(8);
+      expect(updatedTasks[3].column).toBe('todo');
+      expect(updatedTasks[3].labels).toEqual(['reopened']);
+
+      // Verify saved to file
+      const content = fs.readFileSync(testFilepath, 'utf8');
+      const savedBoard = yaml.load(content) as Board;
+      expect(savedBoard.tasks[1].title).toBe('Batch Updated Task 1');
+      expect(savedBoard.tasks[2].priority).toBe(5);
+      expect(savedBoard.tasks[3].column).toBe('todo');
+    });
+
+    it('should return both updated board and specific updated tasks', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Updated Task 1' },
+        3: { priority: 2 }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      expect(Object.keys(updatedTasks)).toEqual(['1', '3']);
+      expect(updatedTasks[1].title).toBe('Updated Task 1');
+      expect(updatedTasks[3].priority).toBe(2);
+
+      expect(updatedBoard.tasks[1]).toEqual(updatedTasks[1]);
+      expect(updatedBoard.tasks[3]).toEqual(updatedTasks[3]);
+      expect(updatedBoard.tasks[2]).toEqual(sampleBoard.tasks[2]); // unchanged
+    });
+
+    it('should update timestamps for all affected tasks', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const originalTask1Updated = sampleBoard.tasks[1].dates.updated;
+      const originalTask2Updated = sampleBoard.tasks[2].dates.updated;
+
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Time Test 1' },
+        2: { title: 'Time Test 2' }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { tasks: updatedTasks } = result;
+
+      expect(new Date(updatedTasks[1].dates.updated).getTime()).toBeGreaterThan(
+        new Date(originalTask1Updated).getTime()
+      );
+      expect(new Date(updatedTasks[2].dates.updated).getTime()).toBeGreaterThan(
+        new Date(originalTask2Updated).getTime()
+      );
+    });
+
+    it('should update moved dates when columns change', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {
+        1: { column: 'done' },
+        2: { title: 'No column change' },
+        3: { column: 'doing' }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1].dates.moved).toBeDefined();
+      expect(updatedTasks[3].dates.moved).toBeDefined();
+      
+      const now = new Date().getTime();
+      expect(new Date(updatedTasks[1].dates.moved!).getTime()).toBeLessThanOrEqual(now);
+      expect(new Date(updatedTasks[3].dates.moved!).getTime()).toBeLessThanOrEqual(now);
+    });
+
+    it('should preserve task IDs and created dates', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {
+        1: { id: 999, title: 'Try to change ID' },
+        2: { title: 'Normal update' }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { tasks: updatedTasks } = result;
+
+      expect(updatedTasks[1].id).toBe(1); // ID preserved
+      expect(updatedTasks[2].id).toBe(2);
+      expect(updatedTasks[1].dates.created).toBe(sampleBoard.tasks[1].dates.created);
+      expect(updatedTasks[2].dates.created).toBe(sampleBoard.tasks[2].dates.created);
+    });
+
+    it('should update board timestamp', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const originalBoardUpdated = sampleBoard.dates.updated;
+
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Board time test' }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { board: updatedBoard } = result;
+
+      expect(new Date(updatedBoard.dates.updated).getTime()).toBeGreaterThan(
+        new Date(originalBoardUpdated).getTime()
+      );
+    });
+
+    it('should handle single task update', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {
+        2: { title: 'Single batch update', priority: 1 }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      expect(Object.keys(updatedTasks)).toEqual(['2']);
+      expect(updatedTasks[2].title).toBe('Single batch update');
+      expect(updatedTasks[2].priority).toBe(1);
+
+      expect(updatedBoard.tasks[1]).toEqual(sampleBoard.tasks[1]); // unchanged
+      expect(updatedBoard.tasks[3]).toEqual(sampleBoard.tasks[3]); // unchanged
+    });
+
+    it('should handle empty updates record', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {};
+
+      const result = updateTasksBatch(filepath, updates);
+      const { board: updatedBoard, tasks: updatedTasks } = result;
+
+      expect(Object.keys(updatedTasks)).toEqual([]);
+      expect(updatedBoard.tasks).toEqual(sampleBoard.tasks); // no changes to tasks
+
+      // Board timestamp should still be updated
+      expect(new Date(updatedBoard.dates.updated).getTime()).toBeGreaterThanOrEqual(
+        new Date(sampleBoard.dates.updated).getTime()
+      );
+    });
+
+    it('should throw error for non-existent task', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Valid update' },
+        999: { title: 'Invalid task ID' }
+      };
+
+      expect(() => updateTasksBatch(filepath, updates)).toThrow(
+        'Task with ID 999 not found on the board.'
+      );
+    });
+
+    it('should throw error for non-existent file', () => {
+      const nonExistentPath = path.join(tempDir, 'nonexistent.knbn');
+      const filepath = Brands.Filepath(nonExistentPath);
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Test' }
+      };
+
+      expect(() => updateTasksBatch(filepath, updates)).toThrow(
+        'Failed to load board file:'
+      );
+    });
+
+    it('should preserve other tasks unchanged', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {
+        1: { title: 'Updated Task 1' }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { board: updatedBoard } = result;
+
+      expect(updatedBoard.tasks[2]).toEqual(sampleBoard.tasks[2]); // unchanged
+      expect(updatedBoard.tasks[3]).toEqual(sampleBoard.tasks[3]); // unchanged
+    });
+
+    it('should handle complex batch updates with all properties', () => {
+      const filepath = Brands.Filepath(testFilepath);
+      const updates: Record<number, Partial<Task>> = {
+        1: {
+          title: 'Complex Update 1',
+          description: 'New description',
+          column: 'done',
+          labels: ['updated', 'complex'],
+          sprint: 'Sprint 2',
+          priority: 0,
+          storyPoints: 13
+        },
+        2: {
+          column: 'todo',
+          labels: ['bug', 'critical'],
+          priority: 1
+        },
+        3: {
+          title: 'Reopened task',
+          description: 'Task was reopened for more work',
+          column: 'doing'
+        }
+      };
+
+      const result = updateTasksBatch(filepath, updates);
+      const { tasks: updatedTasks } = result;
+
+      // Task 1 updates
+      expect(updatedTasks[1].title).toBe('Complex Update 1');
+      expect(updatedTasks[1].description).toBe('New description');
+      expect(updatedTasks[1].column).toBe('done');
+      expect(updatedTasks[1].labels).toEqual(['updated', 'complex']);
+      expect(updatedTasks[1].sprint).toBe('Sprint 2');
+      expect(updatedTasks[1].priority).toBe(0);
+      expect(updatedTasks[1].storyPoints).toBe(13);
+
+      // Task 2 updates
+      expect(updatedTasks[2].column).toBe('todo');
+      expect(updatedTasks[2].labels).toEqual(['bug', 'critical']);
+      expect(updatedTasks[2].priority).toBe(1);
+      expect(updatedTasks[2].title).toBe('Second Task'); // preserved
+
+      // Task 3 updates
+      expect(updatedTasks[3].title).toBe('Reopened task');
+      expect(updatedTasks[3].description).toBe('Task was reopened for more work');
+      expect(updatedTasks[3].column).toBe('doing');
     });
   });
 });

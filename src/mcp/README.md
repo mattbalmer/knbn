@@ -121,6 +121,63 @@ Arguments:
 Task 1 updated successfully
 ```
 
+#### Update Multiple Tasks (Batch)
+**Request:**
+```
+Tool: update_tasks_batch
+Arguments:
+  updates:
+    1:
+      column: "In Progress"
+      priority: 1
+    2:
+      title: "Updated Task 2"
+      storyPoints: 8
+    3:
+      column: "Done"
+      labels: ["feature", "completed"]
+  filename: "alpha.knbn"
+```
+
+**Response:**
+```json
+{
+  "updatedCount": 3,
+  "tasks": {
+    "1": {
+      "id": 1,
+      "title": "Implement user authentication",
+      "column": "In Progress",
+      "priority": 1,
+      "dates": {
+        "created": "2024-01-15T10:30:00Z",
+        "updated": "2024-01-15T11:00:00Z",
+        "moved": "2024-01-15T11:00:00Z"
+      }
+    },
+    "2": {
+      "id": 2,
+      "title": "Updated Task 2",
+      "storyPoints": 8,
+      "dates": {
+        "created": "2024-01-15T10:35:00Z",
+        "updated": "2024-01-15T11:00:00Z"
+      }
+    },
+    "3": {
+      "id": 3,
+      "column": "Done",
+      "labels": ["feature", "completed"],
+      "dates": {
+        "created": "2024-01-15T10:40:00Z",
+        "updated": "2024-01-15T11:00:00Z",
+        "moved": "2024-01-15T11:00:00Z"
+      }
+    }
+  }
+}
+```
+
 #### List Tasks
 **Request:**
 ```
@@ -252,5 +309,133 @@ Arguments:
     "status": "active"
   }
 ]
+```
+
+## Available Tools Reference
+
+### Board Tools
+- `list_boards` - List all .knbn board files
+- `get_board` - Get complete board contents
+- `create_board` - Create new board with name and description
+
+### Task Tools
+- `create_task` - Create task with title, description, priority, story points
+- `get_task` - Get task details by ID
+- `list_tasks` - List/filter tasks by column, label, priority, sprint
+- `update_task` - Update task properties (title, column, priority, etc.)
+- `update_tasks_batch` - Update multiple tasks at once with Record format
+
+### Column Tools
+- `create_column` - Add new column at specified position
+- `list_columns` - List all columns with optional task counts
+- `update_column` - Rename existing column
+- `remove_column` - Delete column and move tasks
+
+### Label Tools
+- `add_label` - Create label with name and color
+- `list_labels` - List all available labels
+- `update_label` - Modify label name or color
+- `remove_label` - Delete label from board
+
+### Sprint Tools
+- `add_sprint` - Create sprint with dates, capacity, description
+- `list_sprints` - List sprints filtered by status (active/upcoming/completed)
+- `update_sprint` - Modify sprint properties
+- `remove_sprint` - Delete sprint
+
+## MCP Resources
+
+The server exposes board data through MCP resources for read-only access:
+
+### Board Resource
+```
+URI: file://[filename]
+Type: application/json
+Description: Complete board data including tasks, columns, labels, sprints
+```
+
+**Example Resource Access:**
+```
+Resource: file://alpha.knbn
+Content-Type: application/json
+```
+
+## Error Handling
+
+All tools return structured error responses with clear messages:
+
+**Common Error Scenarios:**
+- Board file not found
+- Invalid task ID
+- Column doesn't exist
+- Label name conflicts
+- Sprint date validation errors
+
+**Error Response Format:**
+```
+Error: [Category] - [Specific Issue]
+Details: [Additional context]
+```
+
+## Integration Patterns
+
+### Workflow Automation
+```
+1. Create board → Add columns → Create labels → Set up sprints
+2. Create tasks → Assign to sprint → Move through columns
+3. Filter and report on task progress
+```
+
+### Batch Operations
+Multiple tool calls can be chained for complex operations:
+```
+1. list_tasks(filter: "high priority")
+2. update_task(id: X, column: "In Progress") for each result
+3. list_tasks(column: "In Progress") to verify
+```
+
+Use `update_tasks_batch` for efficient multi-task updates:
+```
+1. update_tasks_batch(updates: {1: {column: "Done"}, 2: {priority: 1}})
+2. list_tasks(column: "Done") to verify completion
+```
+
+### Data Synchronization
+Use resources for read-only data access and tools for modifications:
+- Read board state via resources
+- Modify via tools
+- Validate changes via subsequent resource reads
+
+## Development Integration
+
+### MCP Server Configuration
+```typescript
+import { createMcpServer } from './src/mcp/server';
+
+const server = createMcpServer();
+server.connect({
+  transport: 'stdio'
+});
+```
+
+### Tool Registration
+Tools are auto-registered from the tools directory structure. Each tool exports:
+```typescript
+export const toolDefinition = {
+  name: string,
+  description: string,
+  inputSchema: JSONSchema
+};
+
+export async function handleTool(args: any): Promise<string> {
+  // Implementation
+}
+```
+
+### Resource Registration
+Resources provide read-only access to board data:
+```typescript
+export async function listResources(): Promise<Resource[]>
+export async function readResource(uri: string): Promise<string>
 ```
 

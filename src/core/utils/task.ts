@@ -56,6 +56,57 @@ export const updateTask = (board: Board, taskId: number, updates: Partial<Task>)
   };
 }
 
+export const updateTasksBatch = (board: Board, updates: Record<number, Partial<Task>>): {
+  board: Board,
+  tasks: Record<number, Task>
+} => {
+  const now = getNow();
+  let updatedBoard = { ...board };
+  const updatedTasks: Record<number, Task> = { };
+  
+  for (const [taskIdStr, taskUpdates] of Object.entries(updates)) {
+    const taskId = parseInt(taskIdStr, 10);
+    const task = updatedBoard.tasks[taskId];
+    if (!task) {
+      throw new Error(`Task with ID ${taskId} not found on the board.`);
+    }
+
+    const columnChanged = taskUpdates.column && taskUpdates.column !== task.column;
+
+    const updatedTask: Task = {
+      ...task,
+      ...taskUpdates,
+      id: taskId,
+      dates: {
+        created: task.dates.created,
+        updated: now,
+        moved: (columnChanged ? now : task.dates.moved)
+      }
+    };
+
+    updatedTasks[taskId] = updatedTask;
+
+    updatedBoard = {
+      ...updatedBoard,
+      tasks: {
+        ...updatedBoard.tasks,
+        [taskId]: updatedTask,
+      }
+    };
+  }
+
+  return {
+    board: {
+      ...updatedBoard,
+      dates: {
+        ...updatedBoard.dates,
+        updated: now,
+      },
+    },
+    tasks: updatedTasks,
+  }
+}
+
 export const sortTasks = (tasks: Task[]): Task[] => {
   return [...tasks].sort((a, b) => {
     // Tasks with priority come first, sorted by ascending priority

@@ -1,6 +1,6 @@
 import { Board, Filepath, Task } from '../types';
 import { newTask } from '../utils/board';
-import { CreateTaskParams, updateTask as updateTaskUtil, sortTasks } from '../utils/task';
+import { CreateTaskParams, updateTask as updateTaskUtil, updateTasksBatch as updateTasksBatchUtil, sortTasks } from '../utils/task';
 import { loadBoard, saveBoard } from '../utils/board-files';
 
 export const getTask = (filepath: Filepath, taskId: number): Task | undefined => {
@@ -58,4 +58,20 @@ export const updateTask = (filepath: Filepath, taskId: number, updates: Partial<
   const updatedBoard = updateTaskUtil(board, taskId, updates);
   saveBoard(filepath, updatedBoard);
   return updatedBoard;
+}
+
+export const updateTasksBatch = (filepath: Filepath, updates: Record<number, Partial<Task>>): {
+  board: Board,
+  tasks: Record<number, Task>,
+} => {
+  const board = loadBoard(filepath);
+  const {
+    board: updatedBoard,
+    tasks: updatedTasks,
+  } = updateTasksBatchUtil(board, updates);
+  saveBoard(filepath, updatedBoard);
+  return {
+    board: updatedBoard,
+    tasks: updatedTasks,
+  };
 }
