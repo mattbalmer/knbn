@@ -1,6 +1,6 @@
 # KnBn
 
-A TypeScript-based CLI for managing advanced TODOs, in a Kanban style, from the command line.
+A TypeScript-first tool for managing advanced TODOs, in a Kanban style, locally in your project.
 
 _This is an early, work-in-progress version of the project. Use accepting risk of breaking changes._
 
@@ -8,21 +8,19 @@ _This is an early, work-in-progress version of the project. Use accepting risk o
 
 KnBn provides three main ways to interact with kanban boards:
 
-- **CLI Interface**: Command-line tools for creating, updating, and managing tasks and boards
-- **Web Interface**: Browser-based UI via the separate `knbn-web` package  
-- **MCP Protocol**: AI assistant integration through Model Context Protocol
-
-For detailed documentation on each component, see:
-- [CLI Documentation](src/cli/README.md) - Command-line usage and examples
-- [Core Documentation](src/core/README.md) - Business logic and utilities  
-- [MCP Documentation](src/mcp/README.md) - AI integration and protocol details
+- **CLI Interface**: (`knbn-cli`) Command-line tools for creating, updating, and managing tasks and boards
+- **Web Interface**: (`knbn-web`) Browser-based UI via the separate `knbn-web` package  
+- **MCP Protocol**: (`knbn-mcp`) AI assistant integration through Model Context Protocol
 
 ## Usage
 
 For basic CLI usage, run via npx:
 
 ```bash
-npx knbn
+npx knbn-cli
+# or
+npm i -g knbn-cli
+knbn-cli 
 ```
 
 ## Web Interface
@@ -36,11 +34,27 @@ npm i -g knbn-web
 knbn-web 
 ```
 
-Then use either `knbn-web` or `knbn serve` to start the web server.
-You can specify a custom port with the `-p` option:
+Then use either `knbn-web` or `knbn-cli serve` to start the web server.
+You can specify a custom port with the `-p` option.
 
+## MCP Server
+
+If you want to integrate knbn with AI assistants using the Model Context Protocol (MCP), you can run the MCP server:
+
+```json
+{
+  "mcpServers": {
+    "knbn": {
+      "command": "npx",
+      "args": ["knbn-mcp"]
+    }
+  }
+}
+```
+
+Or, for example with Claude:
 ```bash
-knbn-web -p 8080
+claude mcp add knbn -- npx knbn-mcp
 ```
 
 ## Features
@@ -48,5 +62,5 @@ knbn-web -p 8080
 - Command-line kanban board management
 - Task and board operations
 - Board data stored in `.knbn` files
-- Lightweight CLI with optional web interface (`knbn-web` or `knbn serve`)
-- MCP server (see `mcp-config.json`) for AI integration (AI agents should always prefer MCP over CLI)
+- Lightweight CLI with optional web interface (`knbn-web` or `knbn-cli serve`)
+- MCP server (see `knbn-mcp`)

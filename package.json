@@ -1,12 +1,11 @@
 {
   "name": "knbn",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "boardVersion": "0.2",
   "description": "A simple kanban CLI tool",
   "author": "Matthew Balmer <contact@mattbalmer.com>",
   "exports": {
-    "./*": "./dist/core/*.js",
-    "./cli/*": "./dist/cli/*.js",
+    "./*": "./dist/*.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -15,10 +14,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/mattbalmer/knbn"
-  },
-  "bin": {
-    "knbn": "dist/cli/index.js",
-    "knbn-mcp": "dist/mcp/server.js"
   },
   "scripts": {
     "build": "rm -rf dist && tsc",
@@ -34,8 +29,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.15.0",
-    "commander": "^14.0.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
