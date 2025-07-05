@@ -331,9 +331,9 @@ Arguments:
     {
       "filename": "old-board.knbn",
       "status": "migrated",
-      "fromVersion": "0.1.0",
-      "toVersion": "0.2.0",
-      "message": "Migrated from 0.1.0 to 0.2.0",
+      "fromVersion": "0.1",
+      "toVersion": "0.2",
+      "message": "Migrated from 0.1 to 0.2",
       "backupCreated": false
     }
   ],
@@ -360,25 +360,25 @@ Arguments:
     {
       "filename": "board1.knbn",
       "status": "migrated",
-      "fromVersion": "0.1.0",
-      "toVersion": "0.2.0",
-      "message": "Migrated from 0.1.0 to 0.2.0",
+      "fromVersion": "0.1",
+      "toVersion": "0.2",
+      "message": "Migrated from 0.1 to 0.2",
       "backupCreated": true
     },
     {
       "filename": "board2.knbn",
       "status": "migrated",
-      "fromVersion": "0.1.0",
-      "toVersion": "0.2.0",
-      "message": "Migrated from 0.1.0 to 0.2.0",
+      "fromVersion": "0.1",
+      "toVersion": "0.2",
+      "message": "Migrated from 0.1 to 0.2",
       "backupCreated": true
     },
     {
       "filename": "current.knbn",
       "status": "skipped",
-      "fromVersion": "0.2.0",
-      "toVersion": "0.2.0",
-      "message": "Already at latest version (0.2.0)"
+      "fromVersion": "0.2",
+      "toVersion": "0.2",
+      "message": "Already at latest version (0.2)"
     }
   ],
   "summary": "Migration Summary:\n  Migrated: 2 files\n  Already current: 1 files"
@@ -404,16 +404,16 @@ Arguments:
     {
       "filename": "board1.knbn",
       "status": "migrated",
-      "fromVersion": "0.1.0",
-      "toVersion": "0.2.0",
-      "message": "Would migrate from 0.1.0 to 0.2.0"
+      "fromVersion": "0.1",
+      "toVersion": "0.2",
+      "message": "Would migrate from 0.1 to 0.2"
     },
     {
       "filename": "board2.knbn",
       "status": "migrated",
-      "fromVersion": "0.1.0",
-      "toVersion": "0.2.0",
-      "message": "Would migrate from 0.1.0 to 0.2.0"
+      "fromVersion": "0.1",
+      "toVersion": "0.2",
+      "message": "Would migrate from 0.1 to 0.2"
     }
   ],
   "summary": "Migration Summary:\n  Would migrate: 2 files\n  Already current: 0 files\n\nRun without dryRun to perform the migration."

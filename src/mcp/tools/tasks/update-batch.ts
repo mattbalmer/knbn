@@ -72,7 +72,7 @@ export const registerUpdateTasksBatchTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error updating tasks'
+            text: error?.message || error || 'Unknown error updating tasks'
           }],
         };
       }

@@ -41,7 +41,7 @@ export const registerListLabelsTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error listing labels'
+            text: error?.message || error || 'Unknown error listing labels'
           }],
         };
       }

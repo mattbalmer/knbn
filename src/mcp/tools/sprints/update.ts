@@ -61,7 +61,7 @@ export const registerUpdateSprintTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error updating sprint'
+            text: error?.message || error || 'Unknown error updating sprint'
           }],
         };
       }

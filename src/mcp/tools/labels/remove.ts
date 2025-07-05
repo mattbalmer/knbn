@@ -39,7 +39,7 @@ export const registerRemoveLabelTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error removing label'
+            text: error?.message || error || 'Unknown error removing label'
           }],
         };
       }

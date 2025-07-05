@@ -43,7 +43,7 @@ describe('board-files utils', () => {
           ends: '2024-01-15T09:00:00Z'
         }
       }],
-      metadata: { nextId: 2, version: '0.2.0' },
+      metadata: { nextId: 2, version: '0.2' },
       dates: {
         created: '2024-01-01T09:00:00Z',
         updated: '2024-01-01T09:00:00Z',
@@ -196,8 +196,8 @@ describe('board-files utils', () => {
       );
     });
     it('should migrate board when version mismatch detected', () => {
-      // Create a v0.1.0 board file
-      const board_0_1_0 = {
+      // Create a v0.1 board file
+      const board_0_1 = {
         configuration: {
           name: 'Migration Test Board',
           description: 'Board for testing migration',
@@ -220,11 +220,11 @@ describe('board-files utils', () => {
           nextId: 2,
           createdAt: '2024-01-01T09:00:00Z',
           lastModified: '2024-01-01T15:00:00Z',
-          version: '0.1.0'
+          version: '0.1'
         }
       };
       
-      const content = yaml.dump(board_0_1_0);
+      const content = yaml.dump(board_0_1);
       fs.writeFileSync(testFilepath, content, 'utf8');
 
       const filepath = Brands.Filepath(testFilepath);
@@ -234,7 +234,7 @@ describe('board-files utils', () => {
       expect(loadedBoard.name).toBe('Migration Test Board');
       expect(loadedBoard.description).toBe('Board for testing migration');
       expect(loadedBoard.columns).toEqual([{ name: 'todo' }, { name: 'done' }]);
-      expect(loadedBoard.metadata.version).toBe('0.2.0');
+      expect(loadedBoard.metadata.version).toBe('0.2');
       expect(loadedBoard.dates.created).toBe('2024-01-01T09:00:00Z');
       expect(loadedBoard.dates.updated).toBe('2024-01-01T15:00:00Z');
       expect(loadedBoard.dates.saved).toBe('2024-01-01T15:00:00Z');
@@ -318,7 +318,7 @@ describe('board-files utils', () => {
         name: 'Minimal Board',
         columns: [{ name: 'todo' }],
         tasks: {},
-        metadata: { nextId: 1, version: '0.2.0' },
+        metadata: { nextId: 1, version: '0.2' },
         dates: {
           created: '2024-01-01T09:00:00Z',
           updated: '2024-01-01T09:00:00Z',

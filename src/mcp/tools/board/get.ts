@@ -87,7 +87,7 @@ export const registerGetBoardTool = (server: McpServer) =>
           },
         };
       } catch (error: any) {
-        throw new Error(error.message || error || 'Unknown error loading board');
+        throw new Error(error?.message || error || 'Unknown error loading board');
       }
     }
   );

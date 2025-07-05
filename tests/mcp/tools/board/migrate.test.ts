@@ -49,7 +49,7 @@ describe('MCP Migrate Tool', () => {
       sprints: {},
       metadata: {
         nextId: 1,
-        version: '0.1.0',
+        version: '0.1',
         createdAt: '2024-01-01T00:00:00.000Z',
         lastModified: '2024-01-01T00:00:00.000Z'
       }
@@ -67,7 +67,7 @@ describe('MCP Migrate Tool', () => {
       sprints: [],
       metadata: {
         nextId: 1,
-        version: '0.2.0'
+        version: '0.2'
       },
       dates: {
         created: '2024-01-01T00:00:00.000Z',
@@ -101,12 +101,12 @@ describe('MCP Migrate Tool', () => {
       expect(result.results).toHaveLength(1);
       expect(result.results[0].status).toBe('migrated');
       expect(result.results[0].filename).toBe('test.knbn');
-      expect(result.results[0].fromVersion).toBe('0.1.0');
-      expect(result.results[0].toVersion).toBe('0.2.0');
+      expect(result.results[0].fromVersion).toBe('0.1');
+      expect(result.results[0].toVersion).toBe('0.2');
       
       // Verify board was actually migrated
       const board = loadBoard(path.join(tempDir, 'test.knbn') as Filepath);
-      expect(board.metadata.version).toBe('0.2.0');
+      expect(board.metadata.version).toBe('0.2');
       expect(board.name).toBe('Test Board');
     });
 
@@ -173,8 +173,8 @@ describe('MCP Migrate Tool', () => {
       // Verify both boards were migrated
       const board1 = loadBoard(path.join(tempDir, 'board1.knbn') as Filepath);
       const board2 = loadBoard(path.join(tempDir, 'board2.knbn') as Filepath);
-      expect(board1.metadata.version).toBe('0.2.0');
-      expect(board2.metadata.version).toBe('0.2.0');
+      expect(board1.metadata.version).toBe('0.2');
+      expect(board2.metadata.version).toBe('0.2');
     });
 
     it('should handle mixed results (some migrate, some skip, some error)', async () => {
@@ -239,14 +239,14 @@ describe('MCP Migrate Tool', () => {
       expect(result.skippedCount).toBe(0);
       expect(result.errorCount).toBe(0);
       expect(result.results[0].status).toBe('migrated');
-      expect(result.results[0].message).toContain('Would migrate from 0.1.0 to 0.2.0');
+      expect(result.results[0].message).toContain('Would migrate from 0.1 to 0.2');
       expect(result.summary).toContain('Would migrate: 1 files');
       expect(result.summary).toContain('Run without dryRun to perform the migration');
       
       // Verify file was NOT actually migrated
       const fileContent = fs.readFileSync('test.knbn', 'utf8');
       const data = JSON.parse(fileContent);
-      expect(data.metadata.version).toBe('0.1.0'); // Still old version
+      expect(data.metadata.version).toBe('0.1'); // Still old version
     });
 
     it('should combine dry-run with --all flag', async () => {
@@ -264,8 +264,8 @@ describe('MCP Migrate Tool', () => {
       // Verify no files were actually migrated
       const board1 = JSON.parse(fs.readFileSync('board1.knbn', 'utf8'));
       const board2 = JSON.parse(fs.readFileSync('board2.knbn', 'utf8'));
-      expect(board1.metadata.version).toBe('0.1.0');
-      expect(board2.metadata.version).toBe('0.1.0');
+      expect(board1.metadata.version).toBe('0.1');
+      expect(board2.metadata.version).toBe('0.1');
     });
   });
 
@@ -283,11 +283,11 @@ describe('MCP Migrate Tool', () => {
       
       // Verify backup contains original content (backup is JSON format)
       const backupContent = JSON.parse(fs.readFileSync('test.knbn.bak', 'utf8'));
-      expect(backupContent.metadata.version).toBe('0.1.0');
+      expect(backupContent.metadata.version).toBe('0.1');
       
       // Verify main file was migrated (main file is now YAML format)
       const migratedBoard = loadBoard(path.join(tempDir, 'test.knbn') as Filepath);
-      expect(migratedBoard.metadata.version).toBe('0.2.0');
+      expect(migratedBoard.metadata.version).toBe('0.2');
     });
 
     it('should create backup for multiple files', async () => {

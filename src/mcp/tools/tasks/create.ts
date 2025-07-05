@@ -74,7 +74,7 @@ export const registerCreateTaskTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error creating task'
+            text: error?.message || error || 'Unknown error creating task'
           }],
         };
       }

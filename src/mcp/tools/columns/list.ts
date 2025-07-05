@@ -47,7 +47,7 @@ export const registerListColumnsTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error listing columns'
+            text: error?.message || error || 'Unknown error listing columns'
           }],
         };
       }

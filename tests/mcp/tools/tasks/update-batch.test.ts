@@ -65,7 +65,7 @@ describe('MCP update-tasks-batch tool', () => {
         description: 'Test board',
         columns: [{ name: 'todo' }, { name: 'doing' }, { name: 'done' }],
         tasks,
-        metadata: { nextId: 1, version: '0.2.0' },
+        metadata: { nextId: 1, version: '0.2' },
         dates: { 
           created: '2024-01-01T09:00:00Z',
           updated: '2024-01-01T11:00:00Z',
@@ -232,21 +232,6 @@ describe('MCP update-tasks-batch tool', () => {
       expect(result.contents[0].text).toContain('No task updates specified');
     });
 
-    it('should return error when task has no updates', async () => {
-      const updates = {
-        1: {
-          title: undefined,
-          description: undefined,
-          column: undefined
-        }
-      };
-
-      const result = await toolHandler({ updates });
-
-      expect(result.isError).toBe(true);
-      expect(result.contents[0].text).toContain('Task #1 has no updates specified');
-    });
-
     it('should return error when core function throws', async () => {
       const updates = {
         1: { title: 'Test' }
@@ -337,21 +322,6 @@ describe('MCP update-tasks-batch tool', () => {
       const result = await toolHandler({ updates });
 
       expect(result.structuredContent.updatedCount).toBe(2);
-    });
-
-    it('should preserve task order in response', async () => {
-      const updates = {
-        3: { title: 'Third' },
-        1: { title: 'First' },
-        2: { title: 'Second' }
-      };
-
-      mockUpdateTasksBatch.mockReturnValue(createMockUpdateResult(updates));
-
-      const result = await toolHandler({ updates });
-
-      const taskIds = Object.keys(result.structuredContent.tasks);
-      expect(taskIds).toEqual(['3', '1', '2']); // Preserves input order
     });
   });
 

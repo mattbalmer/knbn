@@ -182,7 +182,7 @@ export const registerMigrateTool = (server: McpServer) =>
           results.push({
             filename,
             status: 'error',
-            message: `Migration failed - ${error.message}`
+            message: `Migration failed - ${error?.message}`
           });
           errorCount++;
         }

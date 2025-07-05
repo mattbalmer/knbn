@@ -38,7 +38,7 @@ export const registerRemoveColumnTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error removing column'
+            text: error?.message || error || 'Unknown error removing column'
           }],
         };
       }

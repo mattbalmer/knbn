@@ -60,7 +60,7 @@ describe('task actions', () => {
           }
         }
       },
-      metadata: { nextId: 4, version: '0.2.0' },
+      metadata: { nextId: 4, version: '0.2' },
       dates: {
         created: '2024-01-01T09:00:00Z',
         updated: '2024-01-01T09:00:00Z',

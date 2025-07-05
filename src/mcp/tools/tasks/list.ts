@@ -91,7 +91,7 @@ export const registerListTasksTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error listing tasks'
+            text: error?.message || error || 'Unknown error listing tasks'
           }],
         };
       }

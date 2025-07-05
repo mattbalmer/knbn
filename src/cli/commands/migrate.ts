@@ -105,7 +105,7 @@ export const attachMigrate = (program: Command) =>
             migratedCount++;
 
           } catch (error: any) {
-            console.error(`❌ ${filename}: Migration failed - ${error.message}`);
+            console.error(`❌ ${filename}: Migration failed - ${error?.message}`);
             errorCount++;
           }
         }
@@ -131,7 +131,7 @@ export const attachMigrate = (program: Command) =>
         }
 
       } catch (error: any) {
-        console.error(`Migration failed: ${error.message}`);
+        console.error(`Migration failed: ${error?.message}`);
         process.exit(1);
       }
     });

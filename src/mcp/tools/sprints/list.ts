@@ -61,7 +61,7 @@ export const registerListSprintsTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error listing sprints'
+            text: error?.message || error || 'Unknown error listing sprints'
           }],
         };
       }

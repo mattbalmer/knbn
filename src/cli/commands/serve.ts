@@ -22,7 +22,7 @@ export const attachServe = (program: Command) =>
       });
 
       child.on('error', (error) => {
-        console.error('Failed to start knbn-web server:', error.message);
+        console.error('Failed to start knbn-web server:', error?.message);
         console.error('Make sure knbn-web is installed and available in your PATH');
         process.exit(1);
       });

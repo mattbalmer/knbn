@@ -32,7 +32,7 @@ describe('label actions', () => {
         { name: 'feature', color: '#0096FF' },
         { name: 'urgent' } // no color
       ],
-      metadata: { nextId: 1, version: '0.2.0' },
+      metadata: { nextId: 1, version: '0.2' },
       dates: {
         created: '2024-01-01T09:00:00Z',
         updated: '2024-01-01T09:00:00Z',

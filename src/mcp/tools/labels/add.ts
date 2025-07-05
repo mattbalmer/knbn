@@ -50,7 +50,7 @@ export const registerAddLabelTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error adding label'
+            text: error?.message || error || 'Unknown error adding label'
           }],
         };
       }

@@ -74,7 +74,7 @@ export const registerGetTaskTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error getting task'
+            text: error?.message || error || 'Unknown error getting task'
           }],
         };
       }

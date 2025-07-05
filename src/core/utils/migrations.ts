@@ -1,14 +1,14 @@
 import { Board } from '../types';
-import { Board_0_1_0 } from '../types/version/0.1.0';
-import { Board_0_2_0, Column_0_2_0, Label_0_2_0 } from '../types/version/0.2.0';
+import { Board_0_1 } from '../types/version/0.1';
+import { Board_0_2, Column_0_2, Label_0_2 } from '../types/version/0.2';
 import { KNBN_BOARD_VERSION } from '../constants';
 
-const BOARD_VERSIONS = ['0.1.0', '0.2.0'] as const;
+const BOARD_VERSIONS = ['0.1', '0.2'] as const;
 type Satisfies<T, U> = T extends U ? T : never;
 type BoardVersions = typeof BOARD_VERSIONS[number];
 type BoardTypes = Satisfies<{
-  '0.1.0': Board_0_1_0;
-  '0.2.0': Board_0_2_0;
+  '0.1': Board_0_1;
+  '0.2': Board_0_2;
 }, Record<BoardVersions, any>>;
 type MigrationKey = `${keyof BoardTypes}->${keyof BoardTypes}`;
 
@@ -61,9 +61,9 @@ const migrationFor = <F extends keyof BoardTypes, T extends keyof BoardTypes>(
 }
 
 const migrations = {
-  '0.1.0->0.2.0': (data: Board_0_1_0): Board_0_2_0 => {
-    const columns: Column_0_2_0[] = data.configuration.columns;
-    const labels: Label_0_2_0[] = Array.from(
+  '0.1->0.2': (data: Board_0_1): Board_0_2 => {
+    const columns: Column_0_2[] = data.configuration.columns;
+    const labels: Label_0_2[] = Array.from(
       Object.values(data.tasks)
         .reduce((labels, task) => {
           if (task.labels) {
@@ -82,7 +82,7 @@ const migrations = {
       sprints: data.sprints || undefined,
       metadata: {
         nextId: data.metadata.nextId,
-        version: '0.2.0',
+        version: '0.2',
       },
       dates: {
         created: data.metadata.createdAt,

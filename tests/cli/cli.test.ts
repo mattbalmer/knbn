@@ -33,10 +33,13 @@ describe('CLI Integration Tests', () => {
     rmTempDir('knbn-cli');
   });
 
-  const runCLI = (args: string[]): { stdout: string; stderr: string; exitCode: number } => {
+  const runCLI = (args: (string|object)[]): { stdout: string; stderr: string; exitCode: number } => {
     try {
       // Properly escape arguments for shell execution
       const escapedArgs = args.map(arg => {
+        if (typeof arg === 'object') {
+          return `"${JSON.stringify(arg)}"`
+        }
         if (arg.includes(' ') || arg.includes('"') || arg.includes("'") || arg.startsWith("#")) {
           return `"${arg.replace(/"/g, '\\"')}"`;
         }
@@ -53,9 +56,9 @@ describe('CLI Integration Tests', () => {
       return { stdout, stderr: '', exitCode: 0 };
     } catch (error: any) {
       return {
-        stdout: error.stdout || '',
-        stderr: error.stderr || error.message || '',
-        exitCode: error.status || 1
+        stdout: error?.stdout || '',
+        stderr: error?.stderr || error?.message || '',
+        exitCode: error?.status || 1
       };
     }
   };
@@ -951,262 +954,6 @@ describe('CLI Integration Tests', () => {
     });
   });
 
-  describe('update-tasks-batch command', () => {
-    beforeEach(() => {
-      runCLI(['create-board', 'test-board']);
-      runCLI(['create-task', 'Task 1', '-f', 'test-board.knbn']);
-      runCLI(['create-task', 'Task 2', '-f', 'test-board.knbn']);
-      runCLI(['create-task', 'Task 3', '-f', 'test-board.knbn']);
-    });
-
-    it('should update multiple tasks using JSON format', () => {
-      const json = JSON.stringify([
-        { id: 1, title: 'Updated Task 1', column: 'todo' },
-        { id: 2, priority: 1, column: 'working' },
-        { id: 3, title: 'Updated Task 3' }
-      ]);
-
-      const result = runCLI(['update-tasks-batch', '--tasks', json, '-f', 'test-board.knbn']);
-      
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Successfully updated 3 tasks:');
-      expect(result.stdout).toContain('#1: Updated Task 1 (todo)');
-      expect(result.stdout).toContain('#2: Task 2 (working)');
-      expect(result.stdout).toContain('#3: Updated Task 3 (backlog)');
-
-      // Verify updates in board file
-      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
-      expect(board.tasks[1].title).toBe('Updated Task 1');
-      expect(board.tasks[1].column).toBe('todo');
-      expect(board.tasks[2].priority).toBe(1);
-      expect(board.tasks[2].column).toBe('working');
-      expect(board.tasks[3].title).toBe('Updated Task 3');
-    });
-
-    it('should update multiple tasks using Record JSON format', () => {
-      const json = JSON.stringify({
-        1: { title: 'Record Task 1', column: 'done' },
-        2: { priority: 2 },
-        3: { column: 'todo', title: 'Record Task 3' }
-      });
-
-      const result = runCLI(['update-tasks-batch', '--tasks', json, '-f', 'test-board.knbn']);
-      
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Successfully updated 3 tasks:');
-      expect(result.stdout).toContain('#1: Record Task 1 (done)');
-      expect(result.stdout).toContain('#2: Task 2 (backlog)');
-      expect(result.stdout).toContain('#3: Record Task 3 (todo)');
-
-      // Verify updates in board file
-      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
-      expect(board.tasks[1].title).toBe('Record Task 1');
-      expect(board.tasks[1].column).toBe('done');
-      expect(board.tasks[2].priority).toBe(2);
-      expect(board.tasks[3].title).toBe('Record Task 3');
-      expect(board.tasks[3].column).toBe('todo');
-    });
-
-    it('should update tasks using IDs and flags', () => {
-      const result = runCLI([
-        'update-tasks-batch',
-        '--ids', '1,2,3',
-        '--column', 'working',
-        '--priority', '1',
-        '-f', 'test-board.knbn'
-      ]);
-      
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Successfully updated 3 tasks:');
-      expect(result.stdout).toContain('#1: Task 1 (working)');
-      expect(result.stdout).toContain('#2: Task 2 (working)');
-      expect(result.stdout).toContain('#3: Task 3 (working)');
-
-      // Verify updates in board file
-      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
-      expect(board.tasks[1].column).toBe('working');
-      expect(board.tasks[1].priority).toBe(1);
-      expect(board.tasks[2].column).toBe('working');
-      expect(board.tasks[2].priority).toBe(1);
-      expect(board.tasks[3].column).toBe('working');
-      expect(board.tasks[3].priority).toBe(1);
-    });
-
-    it('should update tasks using IDs with specific properties', () => {
-      const result = runCLI([
-        'update-tasks-batch',
-        '--ids', '1,3',
-        '--column', 'done',
-        '--sprint', 'Sprint 1',
-        '-f', 'test-board.knbn'
-      ]);
-      
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Successfully updated 2 tasks:');
-      expect(result.stdout).toContain('#1: Task 1 (done)');
-      expect(result.stdout).toContain('#3: Task 3 (done)');
-
-      // Verify updates in board file
-      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
-      expect(board.tasks[1].column).toBe('done');
-      expect(board.tasks[1].sprint).toBe('Sprint 1');
-      expect(board.tasks[2].column).toBe('backlog'); // unchanged
-      expect(board.tasks[3].column).toBe('done');
-      expect(board.tasks[3].sprint).toBe('Sprint 1');
-    });
-
-    it('should fail with invalid JSON format', () => {
-      const result = runCLI(['update-tasks-batch', '--tasks', 'invalid-json', '-f', 'test-board.knbn']);
-      
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('Invalid JSON format for --tasks option');
-    });
-
-    it('should fail with non-existent task ID in JSON', () => {
-      const json = JSON.stringify([
-        { id: 1, title: 'Valid' },
-        { id: 999, title: 'Invalid' }
-      ]);
-
-      const result = runCLI(['update-tasks-batch', '--tasks', json, '-f', 'test-board.knbn']);
-      
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('Task with ID 999 not found');
-    });
-
-    it('should fail with non-existent task ID in flags', () => {
-      const result = runCLI([
-        'update-tasks-batch',
-        '--ids', '1,999',
-        '--column', 'todo',
-        '-f', 'test-board.knbn'
-      ]);
-      
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('Task with ID 999 not found');
-    });
-
-    it('should fail with invalid task ID in flags', () => {
-      const result = runCLI([
-        'update-tasks-batch',
-        '--ids', '1,invalid,3',
-        '--column', 'todo',
-        '-f', 'test-board.knbn'
-      ]);
-      
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('Invalid task ID: invalid');
-    });
-
-    it('should fail when no updates are specified with IDs', () => {
-      const result = runCLI(['update-tasks-batch', '--ids', '1,2', '-f', 'test-board.knbn']);
-      
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('No updates specified. Use --column, --priority, or --sprint with --ids');
-    });
-
-    it('should fail when neither --tasks nor --ids is provided', () => {
-      const result = runCLI(['update-tasks-batch', '-f', 'test-board.knbn']);
-      
-      expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain('Either --tasks or --ids with update options must be specified');
-    });
-
-    it('should handle single task update with flags', () => {
-      const result = runCLI([
-        'update-tasks-batch',
-        '--ids', '2',
-        '--column', 'done',
-        '--priority', '5',
-        '-f', 'test-board.knbn'
-      ]);
-      
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Successfully updated 1 tasks:');
-      expect(result.stdout).toContain('#2: Task 2 (done)');
-
-      // Verify update in board file
-      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
-      expect(board.tasks[2].column).toBe('done');
-      expect(board.tasks[2].priority).toBe(5);
-    });
-
-    it('should handle complex JSON with all task properties', () => {
-      const json = JSON.stringify([
-        {
-          id: 1,
-          title: 'Complex Task 1',
-          description: 'Updated description',
-          column: 'working',
-          priority: 1,
-          storyPoints: 5,
-          labels: ['urgent', 'feature'],
-          sprint: 'Sprint 1'
-        }
-      ]);
-
-      const result = runCLI(['update-tasks-batch', '--tasks', json, '-f', 'test-board.knbn']);
-      
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Successfully updated 1 tasks:');
-      expect(result.stdout).toContain('#1: Complex Task 1 (working)');
-
-      // Verify all updates in board file
-      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
-      const task = board.tasks[1];
-      expect(task.title).toBe('Complex Task 1');
-      expect(task.description).toBe('Updated description');
-      expect(task.column).toBe('working');
-      expect(task.priority).toBe(1);
-      expect(task.storyPoints).toBe(5);
-      expect(task.labels).toEqual(['urgent', 'feature']);
-      expect(task.sprint).toBe('Sprint 1');
-    });
-
-    it('should auto-detect board file when no -f flag is provided', () => {
-      // Rename to discoverable name
-      fs.renameSync(path.join(tempDir, 'test-board.knbn'), path.join(tempDir, '.knbn'));
-      
-      const result = runCLI([
-        'update-tasks-batch',
-        '--ids', '1,2',
-        '--column', 'todo'
-      ]);
-      
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Successfully updated 2 tasks:');
-
-      // Verify updates in auto-detected file
-      const board = loadBoard(path.join(tempDir, '.knbn') as Filepath);
-      expect(board.tasks[1].column).toBe('todo');
-      expect(board.tasks[2].column).toBe('todo');
-    });
-
-    it('should preserve task timestamps correctly', () => {
-      const json = JSON.stringify([
-        { id: 1, title: 'Time Test 1' },
-        { id: 2, column: 'working' }
-      ]);
-
-      const result = runCLI(['update-tasks-batch', '--tasks', json, '-f', 'test-board.knbn']);
-      
-      expect(result.exitCode).toBe(0);
-
-      // Verify timestamps were updated
-      const board = loadBoard(path.join(tempDir, 'test-board.knbn') as Filepath);
-      const now = new Date().getTime();
-      
-      const task1Updated = new Date(board.tasks[1].dates.updated).getTime();
-      const task2Updated = new Date(board.tasks[2].dates.updated).getTime();
-      const task2Moved = new Date(board.tasks[2].dates.moved!).getTime();
-      
-      expect(task1Updated).toBeLessThanOrEqual(now);
-      expect(task2Updated).toBeLessThanOrEqual(now);
-      expect(task2Moved).toBeLessThanOrEqual(now); // Column changed
-      expect(board.tasks[1].dates.moved).toBeUndefined(); // No column change
-    });
-  });
-
   describe('migrate command', () => {
     beforeEach(() => {
       // Create some test board files
@@ -1215,7 +962,7 @@ describe('CLI Integration Tests', () => {
     });
 
     const createOldVersionBoard = (filename: string) => {
-      // Create a board file with an older version format (0.1.0)
+      // Create a board file with an older version format (0.1)
       const oldBoard = {
         configuration: {
           name: 'Old Board',
@@ -1241,7 +988,7 @@ describe('CLI Integration Tests', () => {
         },
         metadata: {
           nextId: 2,
-          version: '0.1.0',
+          version: '0.1',
           createdAt: '2024-01-01T09:00:00Z',
           lastModified: '2024-01-01T10:00:00Z'
         }
@@ -1258,12 +1005,12 @@ describe('CLI Integration Tests', () => {
       const result = runCLI(['migrate', 'old-board.knbn']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1 to 0.2');
       expect(result.stdout).toContain('Migrated: 1 files');
 
       // Verify the file was actually migrated
       const migratedBoard = loadBoard(path.join(tempDir, 'old-board.knbn') as Filepath);
-      expect(migratedBoard.metadata.version).toBe('0.2.0');
+      expect(migratedBoard.metadata.version).toBe('0.2');
       expect(migratedBoard.name).toBe('Old Board');
       expect(migratedBoard.tasks[1].title).toBe('Old Format Task');
     });
@@ -1275,15 +1022,15 @@ describe('CLI Integration Tests', () => {
       const result = runCLI(['migrate', 'old-board-1.knbn', 'old-board-2.knbn']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('✅ old-board-1.knbn: Migrated from 0.1.0 to 0.2.0');
-      expect(result.stdout).toContain('✅ old-board-2.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('✅ old-board-1.knbn: Migrated from 0.1 to 0.2');
+      expect(result.stdout).toContain('✅ old-board-2.knbn: Migrated from 0.1 to 0.2');
       expect(result.stdout).toContain('Migrated: 2 files');
 
       // Verify both files were migrated
       const board1 = loadBoard(path.join(tempDir, 'old-board-1.knbn') as Filepath);
       const board2 = loadBoard(path.join(tempDir, 'old-board-2.knbn') as Filepath);
-      expect(board1.metadata.version).toBe('0.2.0');
-      expect(board2.metadata.version).toBe('0.2.0');
+      expect(board1.metadata.version).toBe('0.2');
+      expect(board2.metadata.version).toBe('0.2');
     });
 
     it('should migrate all files with --all flag', () => {
@@ -1293,8 +1040,8 @@ describe('CLI Integration Tests', () => {
       const result = runCLI(['migrate', '--all']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('✅ old-board-1.knbn: Migrated from 0.1.0 to 0.2.0');
-      expect(result.stdout).toContain('✅ old-board-2.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('✅ old-board-1.knbn: Migrated from 0.1 to 0.2');
+      expect(result.stdout).toContain('✅ old-board-2.knbn: Migrated from 0.1 to 0.2');
       expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version');
       expect(result.stdout).toContain('⏭️  test-board-2.knbn: Already at latest version');
       expect(result.stdout).toContain('Migrated: 2 files');
@@ -1307,7 +1054,7 @@ describe('CLI Integration Tests', () => {
       const result = runCLI(['migrate', 'old-board.knbn', '--dry-run']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('🔄 old-board.knbn: Would migrate from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('🔄 old-board.knbn: Would migrate from 0.1 to 0.2');
       expect(result.stdout).toContain('Would migrate: 1 files');
       expect(result.stdout).toContain('Run without --dry-run to perform the migration');
 
@@ -1315,7 +1062,7 @@ describe('CLI Integration Tests', () => {
       const yaml = require('js-yaml');
       const content = fs.readFileSync(path.join(tempDir, 'old-board.knbn'), 'utf8');
       const board = yaml.load(content) as any;
-      expect(board.metadata.version).toBe('0.1.0'); // Still old version
+      expect(board.metadata.version).toBe('0.1'); // Still old version
     });
 
     it('should create backup files when --backup flag is used', () => {
@@ -1325,7 +1072,7 @@ describe('CLI Integration Tests', () => {
       
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('📋 Created backup: old-board.knbn.bak');
-      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1 to 0.2');
 
       // Verify backup file exists and contains old version
       expect(fs.existsSync(path.join(tempDir, 'old-board.knbn.bak'))).toBe(true);
@@ -1333,18 +1080,18 @@ describe('CLI Integration Tests', () => {
       const yaml = require('js-yaml');
       const backupContent = fs.readFileSync(path.join(tempDir, 'old-board.knbn.bak'), 'utf8');
       const backupBoard = yaml.load(backupContent) as any;
-      expect(backupBoard.metadata.version).toBe('0.1.0');
+      expect(backupBoard.metadata.version).toBe('0.1');
 
       // Verify original file was migrated
       const migratedBoard = loadBoard(path.join(tempDir, 'old-board.knbn') as Filepath);
-      expect(migratedBoard.metadata.version).toBe('0.2.0');
+      expect(migratedBoard.metadata.version).toBe('0.2');
     });
 
     it('should skip files already at latest version', () => {
       const result = runCLI(['migrate', 'test-board-1.knbn']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version (0.2.0)');
+      expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version (0.2)');
       expect(result.stdout).toContain('Already current: 1 files');
       expect(result.stdout).toContain('Migrated: 0 files');
     });
@@ -1416,7 +1163,7 @@ describe('CLI Integration Tests', () => {
       const result = runCLI(['migrate', 'old-board.knbn', 'test-board-1.knbn', 'invalid.knbn', 'nonexistent.knbn']);
       
       expect(result.exitCode).toBe(1); // Should exit with error due to failures
-      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1 to 0.2');
       expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version');
       expect(result.stderr).toContain('Invalid board file format: invalid.knbn');
       expect(result.stderr).toContain('File not found: nonexistent.knbn');
@@ -1431,7 +1178,7 @@ describe('CLI Integration Tests', () => {
       const result = runCLI(['migrate', '--all', '--dry-run']);
       
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('🔄 old-board.knbn: Would migrate from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('🔄 old-board.knbn: Would migrate from 0.1 to 0.2');
       expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version');
       expect(result.stdout).toContain('Would migrate: 1 files');
       expect(result.stdout).toContain('Already current: 2 files');

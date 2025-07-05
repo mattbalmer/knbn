@@ -51,7 +51,7 @@ export const registerUpdateLabelTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error updating label'
+            text: error?.message || error || 'Unknown error updating label'
           }],
         };
       }

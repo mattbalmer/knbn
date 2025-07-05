@@ -97,7 +97,7 @@ export const registerUpdateTaskTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error updating task'
+            text: error?.message || error || 'Unknown error updating task'
           }],
         };
       }

@@ -42,7 +42,7 @@ export const registerUpdateColumnTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error updating column'
+            text: error?.message || error || 'Unknown error updating column'
           }],
         };
       }

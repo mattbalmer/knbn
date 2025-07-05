@@ -82,7 +82,7 @@ export const registerBoardResources = (server: McpServer) => {
           contents: [{
             type: 'text',
             text: JSON.stringify({ 
-              error: error.message || 'Unknown error loading board',
+              error: error?.message || 'Unknown error loading board',
               uri: uri.href 
             }, null, 2),
             uri: uri.href,
@@ -189,7 +189,7 @@ export const registerBoardResources = (server: McpServer) => {
           contents: [{
             type: 'text',
             text: JSON.stringify({ 
-              error: error.message || 'Unknown error loading board summary',
+              error: error?.message || 'Unknown error loading board summary',
               uri: uri.href 
             }, null, 2),
             uri: uri.href,
@@ -274,7 +274,7 @@ export const registerBoardResources = (server: McpServer) => {
           contents: [{
             type: 'text',
             text: JSON.stringify({ 
-              error: error.message || 'Unknown error loading board tasks',
+              error: error?.message || 'Unknown error loading board tasks',
               uri: uri.href 
             }, null, 2),
             uri: uri.href,
@@ -325,7 +325,7 @@ export const registerBoardResources = (server: McpServer) => {
         return {
           contents: [{
             type: 'text',
-            text: JSON.stringify({ error: error.message || 'Unknown error' }, null, 2),
+            text: JSON.stringify({ error: error?.message || 'Unknown error' }, null, 2),
             uri: 'knbn://boards',
           }],
         };

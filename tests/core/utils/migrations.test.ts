@@ -1,16 +1,16 @@
 import { migrateBoard, migrateBoardTo } from '../../../src/core/utils/migrations';
 import { Board } from '../../../src/core/types/knbn';
-import { Board_0_1_0 } from '../../../src/core/types/version/0.1.0';
-import { Board_0_2_0 } from '../../../src/core/types/version/0.2.0';
+import { Board_0_1 } from '../../../src/core/types/version/0.1';
+import { Board_0_2 } from '../../../src/core/types/version/0.2';
 
 describe('migrations utils', () => {
-  let sampleBoard_0_1_0: Board_0_1_0;
-  let sampleBoard_0_2_0: Board_0_2_0;
+  let sampleBoard_0_1: Board_0_1;
+  let sampleBoard_0_2: Board_0_2;
 
   beforeEach(() => {
-    sampleBoard_0_1_0 = {
+    sampleBoard_0_1 = {
       configuration: {
-        name: 'Test Board v0.1.0',
+        name: 'Test Board v0.1',
         description: 'Test board for migration',
         columns: [
           { name: 'todo' },
@@ -61,13 +61,13 @@ describe('migrations utils', () => {
         nextId: 3,
         createdAt: '2024-01-01T09:00:00Z',
         lastModified: '2024-01-01T15:00:00Z',
-        version: '0.1.0'
+        version: '0.1'
       }
     };
 
-    sampleBoard_0_2_0 = {
-      name: 'Test Board v0.2.0',
-      description: 'Test board v0.2.0',
+    sampleBoard_0_2 = {
+      name: 'Test Board v0.2',
+      description: 'Test board v0.2',
       columns: [
         { name: 'todo' },
         { name: 'doing' },
@@ -109,7 +109,7 @@ describe('migrations utils', () => {
       ],
       metadata: {
         nextId: 3,
-        version: '0.2.0'
+        version: '0.2'
       },
       dates: {
         created: '2024-01-01T09:00:00Z',
@@ -120,23 +120,23 @@ describe('migrations utils', () => {
   });
 
   describe('migrateBoard', () => {
-    it('should migrate from 0.1.0 to 0.2.0', () => {
-      const result = migrateBoard(sampleBoard_0_1_0);
+    it('should migrate from 0.1 to 0.2', () => {
+      const result = migrateBoard(sampleBoard_0_1);
 
-      expect(result.name).toBe(sampleBoard_0_1_0.configuration.name);
-      expect(result.description).toBe(sampleBoard_0_1_0.configuration.description);
-      expect(result.columns).toEqual(sampleBoard_0_1_0.configuration.columns);
-      expect(result.tasks).toEqual(sampleBoard_0_1_0.tasks);
-      expect(result.sprints).toEqual(sampleBoard_0_1_0.sprints);
-      expect(result.metadata.nextId).toBe(sampleBoard_0_1_0.metadata.nextId);
-      expect(result.metadata.version).toBe('0.2.0');
-      expect(result.dates.created).toBe(sampleBoard_0_1_0.metadata.createdAt);
-      expect(result.dates.updated).toBe(sampleBoard_0_1_0.metadata.lastModified);
-      expect(result.dates.saved).toBe(sampleBoard_0_1_0.metadata.lastModified);
+      expect(result.name).toBe(sampleBoard_0_1.configuration.name);
+      expect(result.description).toBe(sampleBoard_0_1.configuration.description);
+      expect(result.columns).toEqual(sampleBoard_0_1.configuration.columns);
+      expect(result.tasks).toEqual(sampleBoard_0_1.tasks);
+      expect(result.sprints).toEqual(sampleBoard_0_1.sprints);
+      expect(result.metadata.nextId).toBe(sampleBoard_0_1.metadata.nextId);
+      expect(result.metadata.version).toBe('0.2');
+      expect(result.dates.created).toBe(sampleBoard_0_1.metadata.createdAt);
+      expect(result.dates.updated).toBe(sampleBoard_0_1.metadata.lastModified);
+      expect(result.dates.saved).toBe(sampleBoard_0_1.metadata.lastModified);
     });
 
     it('should extract unique labels from tasks during migration', () => {
-      const result = migrateBoard(sampleBoard_0_1_0);
+      const result = migrateBoard(sampleBoard_0_1);
 
       expect(result.labels).toHaveLength(3);
       const labelNames = result.labels!.map(label => label.name);
@@ -152,7 +152,7 @@ describe('migrations utils', () => {
 
     it('should handle board with no tasks during migration', () => {
       const boardWithoutTasks = {
-        ...sampleBoard_0_1_0,
+        ...sampleBoard_0_1,
         tasks: {}
       };
 
@@ -164,14 +164,14 @@ describe('migrations utils', () => {
 
     it('should handle tasks with no labels during migration', () => {
       const boardWithoutLabels = {
-        ...sampleBoard_0_1_0,
+        ...sampleBoard_0_1,
         tasks: {
           1: {
-            ...sampleBoard_0_1_0.tasks[1],
+            ...sampleBoard_0_1.tasks[1],
             labels: undefined
           },
           2: {
-            ...sampleBoard_0_1_0.tasks[2],
+            ...sampleBoard_0_1.tasks[2],
             labels: undefined
           }
         }
@@ -184,7 +184,7 @@ describe('migrations utils', () => {
 
     it('should handle board without sprints during migration', () => {
       const boardWithoutSprints = {
-        ...sampleBoard_0_1_0,
+        ...sampleBoard_0_1,
         sprints: undefined
       };
 
@@ -194,9 +194,9 @@ describe('migrations utils', () => {
     });
 
     it('should return board unchanged if already at target version', () => {
-      const result = migrateBoard(sampleBoard_0_2_0);
+      const result = migrateBoard(sampleBoard_0_2);
 
-      expect(result).toEqual(sampleBoard_0_2_0);
+      expect(result).toEqual(sampleBoard_0_2);
     });
 
     it('should throw error for invalid board data', () => {
@@ -230,46 +230,46 @@ describe('migrations utils', () => {
 
     it('should throw error for unsupported version', () => {
       const unsupportedBoard = {
-        ...sampleBoard_0_1_0,
+        ...sampleBoard_0_1,
         metadata: {
-          ...sampleBoard_0_1_0.metadata,
+          ...sampleBoard_0_1.metadata,
           version: '0.0.1'
         }
       };
 
-      expect(() => migrateBoard(unsupportedBoard)).toThrow('No migration found for version: 0.0.1->0.1.0');
+      expect(() => migrateBoard(unsupportedBoard)).toThrow('No migration found for version: 0.0.1->0.1');
     });
 
     it('should throw error for future version', () => {
       const futureBoard = {
-        ...sampleBoard_0_2_0,
+        ...sampleBoard_0_2,
         metadata: {
-          ...sampleBoard_0_2_0.metadata,
+          ...sampleBoard_0_2.metadata,
           version: '0.3.0'
         }
       };
 
-      expect(() => migrateBoard(futureBoard)).toThrow('No migration found for version: 0.3.0->0.1.0');
+      expect(() => migrateBoard(futureBoard)).toThrow('No migration found for version: 0.3.0->0.1');
     });
 
     it('should create a deep copy and not mutate original data', () => {
-      const originalData = JSON.parse(JSON.stringify(sampleBoard_0_1_0));
+      const originalData = JSON.parse(JSON.stringify(sampleBoard_0_1));
       
-      migrateBoard(sampleBoard_0_1_0);
+      migrateBoard(sampleBoard_0_1);
       
-      expect(sampleBoard_0_1_0).toEqual(originalData);
+      expect(sampleBoard_0_1).toEqual(originalData);
     });
 
     it('should handle duplicate labels during migration', () => {
       const boardWithDuplicateLabels = {
-        ...sampleBoard_0_1_0,
+        ...sampleBoard_0_1,
         tasks: {
           1: {
-            ...sampleBoard_0_1_0.tasks[1],
+            ...sampleBoard_0_1.tasks[1],
             labels: ['bug', 'urgent', 'bug'] // duplicate 'bug'
           },
           2: {
-            ...sampleBoard_0_1_0.tasks[2],
+            ...sampleBoard_0_1.tasks[2],
             labels: ['urgent', 'feature'] // duplicate 'urgent'
           }
         }
@@ -290,19 +290,19 @@ describe('migrations utils', () => {
   });
 
   describe('migrateBoardTo', () => {
-    it('should migrate to specific version 0.2.0', () => {
-      const result = migrateBoardTo(sampleBoard_0_1_0, '0.2.0');
+    it('should migrate to specific version 0.2', () => {
+      const result = migrateBoardTo(sampleBoard_0_1, '0.2');
 
-      expect(result.metadata.version).toBe('0.2.0');
-      expect(result.name).toBe(sampleBoard_0_1_0.configuration.name);
-      expect(result.description).toBe(sampleBoard_0_1_0.configuration.description);
+      expect(result.metadata.version).toBe('0.2');
+      expect(result.name).toBe(sampleBoard_0_1.configuration.name);
+      expect(result.description).toBe(sampleBoard_0_1.configuration.description);
     });
 
     it('should handle same version migration', () => {
       // The migrateBoardTo function doesn't handle same-version cases
       // It will try to find a migration path and fail
-      expect(() => migrateBoardTo(sampleBoard_0_2_0, '0.2.0')).toThrow(
-        'No migration found for version: 0.2.0->0.2.0'
+      expect(() => migrateBoardTo(sampleBoard_0_2, '0.2')).toThrow(
+        'No migration found for version: 0.2->0.2'
       );
     });
 
@@ -311,8 +311,8 @@ describe('migrations utils', () => {
         metadata: { version: null }
       };
 
-      expect(() => migrateBoardTo(invalidBoard, '0.2.0')).toThrow(
-        'Invalid migration data: missing version information: null -> 0.2.0'
+      expect(() => migrateBoardTo(invalidBoard, '0.2')).toThrow(
+        'Invalid migration data: missing version information: null -> 0.2'
       );
     });
 
@@ -321,8 +321,8 @@ describe('migrations utils', () => {
         metadata: { version: '0.0.1' }
       };
 
-      expect(() => migrateBoardTo(unsupportedBoard, '0.2.0')).toThrow(
-        'No migration found for version: 0.0.1->0.2.0'
+      expect(() => migrateBoardTo(unsupportedBoard, '0.2')).toThrow(
+        'No migration found for version: 0.0.1->0.2'
       );
     });
 
@@ -332,30 +332,30 @@ describe('migrations utils', () => {
         tasks: {}
       };
 
-      expect(() => migrateBoardTo(boardWithoutMetadata, '0.2.0')).toThrow(
-        'Invalid migration data: missing version information: undefined -> 0.2.0'
+      expect(() => migrateBoardTo(boardWithoutMetadata, '0.2')).toThrow(
+        'Invalid migration data: missing version information: undefined -> 0.2'
       );
     });
   });
 
-  describe('0.1.0 -> 0.2.0 migration', () => {
+  describe('0.1 -> 0.2 migration', () => {
     it('should transform configuration structure correctly', () => {
-      const result = migrateBoardTo(sampleBoard_0_1_0, '0.2.0');
+      const result = migrateBoardTo(sampleBoard_0_1, '0.2');
 
       // Configuration should be flattened
-      expect(result.name).toBe(sampleBoard_0_1_0.configuration.name);
-      expect(result.description).toBe(sampleBoard_0_1_0.configuration.description);
-      expect(result.columns).toEqual(sampleBoard_0_1_0.configuration.columns);
+      expect(result.name).toBe(sampleBoard_0_1.configuration.name);
+      expect(result.description).toBe(sampleBoard_0_1.configuration.description);
+      expect(result.columns).toEqual(sampleBoard_0_1.configuration.columns);
       
       // Should not have configuration property
       expect((result as any).configuration).toBeUndefined();
     });
 
     it('should transform metadata structure correctly', () => {
-      const result = migrateBoardTo(sampleBoard_0_1_0, '0.2.0');
+      const result = migrateBoardTo(sampleBoard_0_1, '0.2');
 
-      expect(result.metadata.nextId).toBe(sampleBoard_0_1_0.metadata.nextId);
-      expect(result.metadata.version).toBe('0.2.0');
+      expect(result.metadata.nextId).toBe(sampleBoard_0_1.metadata.nextId);
+      expect(result.metadata.version).toBe('0.2');
       
       // Should not have old metadata fields
       expect((result.metadata as any).createdAt).toBeUndefined();
@@ -363,38 +363,38 @@ describe('migrations utils', () => {
     });
 
     it('should transform dates structure correctly', () => {
-      const result = migrateBoardTo(sampleBoard_0_1_0, '0.2.0');
+      const result = migrateBoardTo(sampleBoard_0_1, '0.2');
 
-      expect(result.dates.created).toBe(sampleBoard_0_1_0.metadata.createdAt);
-      expect(result.dates.updated).toBe(sampleBoard_0_1_0.metadata.lastModified);
-      expect(result.dates.saved).toBe(sampleBoard_0_1_0.metadata.lastModified);
+      expect(result.dates.created).toBe(sampleBoard_0_1.metadata.createdAt);
+      expect(result.dates.updated).toBe(sampleBoard_0_1.metadata.lastModified);
+      expect(result.dates.saved).toBe(sampleBoard_0_1.metadata.lastModified);
     });
 
     it('should preserve tasks unchanged', () => {
-      const result = migrateBoardTo(sampleBoard_0_1_0, '0.2.0');
+      const result = migrateBoardTo(sampleBoard_0_1, '0.2');
 
-      expect(result.tasks).toEqual(sampleBoard_0_1_0.tasks);
+      expect(result.tasks).toEqual(sampleBoard_0_1.tasks);
     });
 
     it('should preserve sprints unchanged when present', () => {
-      const result = migrateBoardTo(sampleBoard_0_1_0, '0.2.0');
+      const result = migrateBoardTo(sampleBoard_0_1, '0.2');
 
-      expect(result.sprints).toEqual(sampleBoard_0_1_0.sprints);
+      expect(result.sprints).toEqual(sampleBoard_0_1.sprints);
     });
 
     it('should handle undefined sprints correctly', () => {
       const boardWithoutSprints = {
-        ...sampleBoard_0_1_0,
+        ...sampleBoard_0_1,
         sprints: undefined
       };
 
-      const result = migrateBoardTo(boardWithoutSprints, '0.2.0');
+      const result = migrateBoardTo(boardWithoutSprints, '0.2');
 
       expect(result.sprints).toBeUndefined();
     });
 
     it('should create labels from task labels correctly', () => {
-      const result = migrateBoardTo(sampleBoard_0_1_0, '0.2.0');
+      const result = migrateBoardTo(sampleBoard_0_1, '0.2');
 
       expect(result.labels).toBeDefined();
       expect(result.labels).toHaveLength(3);
@@ -410,27 +410,27 @@ describe('migrations utils', () => {
 
     it('should handle empty tasks when creating labels', () => {
       const boardWithNoTasks = {
-        ...sampleBoard_0_1_0,
+        ...sampleBoard_0_1,
         tasks: {}
       };
 
-      const result = migrateBoardTo(boardWithNoTasks, '0.2.0');
+      const result = migrateBoardTo(boardWithNoTasks, '0.2');
 
       expect(result.labels).toEqual([]);
     });
 
     it('should handle tasks with empty labels arrays', () => {
       const boardWithEmptyLabels = {
-        ...sampleBoard_0_1_0,
+        ...sampleBoard_0_1,
         tasks: {
           1: {
-            ...sampleBoard_0_1_0.tasks[1],
+            ...sampleBoard_0_1.tasks[1],
             labels: []
           }
         }
       };
 
-      const result = migrateBoardTo(boardWithEmptyLabels, '0.2.0');
+      const result = migrateBoardTo(boardWithEmptyLabels, '0.2');
 
       expect(result.labels).toEqual([]);
     });

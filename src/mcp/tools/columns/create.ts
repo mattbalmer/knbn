@@ -39,7 +39,7 @@ export const registerCreateColumnTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error creating column'
+            text: error?.message || error || 'Unknown error creating column'
           }],
         };
       }

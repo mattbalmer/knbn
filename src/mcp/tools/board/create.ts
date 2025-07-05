@@ -53,7 +53,7 @@ export const registerCreateBoardTool = (server: McpServer) =>
           },
         };
       } catch (error: any) {
-        throw new Error(error.message || error || 'Unknown error creating board');
+        throw new Error(error?.message || error || 'Unknown error creating board');
       }
     }
   );

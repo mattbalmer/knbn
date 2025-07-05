@@ -36,7 +36,7 @@ export const registerRemoveSprintTool = (server: McpServer) =>
           isError: true,
           contents: [{
             type: 'text',
-            text: error.message || error || 'Unknown error removing sprint'
+            text: error?.message || error || 'Unknown error removing sprint'
           }],
         };
       }
