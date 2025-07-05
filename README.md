@@ -49,3 +49,4 @@ knbn-web -p 8080
 - Task and board operations
 - Board data stored in `.knbn` files
 - Lightweight CLI with optional web interface (`knbn-web` or `knbn serve`)
+- MCP server (see `mcp-config.json`) for AI integration (AI agents should always prefer MCP over CLI)
