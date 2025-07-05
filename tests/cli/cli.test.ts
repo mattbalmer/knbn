@@ -1206,4 +1206,251 @@ describe('CLI Integration Tests', () => {
       expect(board.tasks[1].dates.moved).toBeUndefined(); // No column change
     });
   });
+
+  describe('migrate command', () => {
+    beforeEach(() => {
+      // Create some test board files
+      runCLI(['create-board', 'test-board-1']);
+      runCLI(['create-board', 'test-board-2']);
+    });
+
+    const createOldVersionBoard = (filename: string) => {
+      // Create a board file with an older version format (0.1.0)
+      const oldBoard = {
+        configuration: {
+          name: 'Old Board',
+          description: 'Board in old format',
+          columns: [
+            { name: 'todo' },
+            { name: 'doing' },
+            { name: 'done' }
+          ]
+        },
+        tasks: {
+          1: {
+            id: 1,
+            title: 'Old Format Task',
+            description: 'Task in old format',
+            column: 'todo',
+            labels: ['old-label'],
+            dates: {
+              created: '2024-01-01T10:00:00Z',
+              updated: '2024-01-01T10:00:00Z'
+            }
+          }
+        },
+        metadata: {
+          nextId: 2,
+          version: '0.1.0',
+          createdAt: '2024-01-01T09:00:00Z',
+          lastModified: '2024-01-01T10:00:00Z'
+        }
+      };
+
+      const yaml = require('js-yaml');
+      const content = yaml.dump(oldBoard);
+      fs.writeFileSync(path.join(tempDir, filename), content, 'utf8');
+    };
+
+    it('should migrate a single specified file', () => {
+      createOldVersionBoard('old-board.knbn');
+      
+      const result = runCLI(['migrate', 'old-board.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('Migrated: 1 files');
+
+      // Verify the file was actually migrated
+      const migratedBoard = loadBoard(path.join(tempDir, 'old-board.knbn') as Filepath);
+      expect(migratedBoard.metadata.version).toBe('0.2.0');
+      expect(migratedBoard.name).toBe('Old Board');
+      expect(migratedBoard.tasks[1].title).toBe('Old Format Task');
+    });
+
+    it('should migrate multiple specified files', () => {
+      createOldVersionBoard('old-board-1.knbn');
+      createOldVersionBoard('old-board-2.knbn');
+      
+      const result = runCLI(['migrate', 'old-board-1.knbn', 'old-board-2.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('✅ old-board-1.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('✅ old-board-2.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('Migrated: 2 files');
+
+      // Verify both files were migrated
+      const board1 = loadBoard(path.join(tempDir, 'old-board-1.knbn') as Filepath);
+      const board2 = loadBoard(path.join(tempDir, 'old-board-2.knbn') as Filepath);
+      expect(board1.metadata.version).toBe('0.2.0');
+      expect(board2.metadata.version).toBe('0.2.0');
+    });
+
+    it('should migrate all files with --all flag', () => {
+      createOldVersionBoard('old-board-1.knbn');
+      createOldVersionBoard('old-board-2.knbn');
+      
+      const result = runCLI(['migrate', '--all']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('✅ old-board-1.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('✅ old-board-2.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version');
+      expect(result.stdout).toContain('⏭️  test-board-2.knbn: Already at latest version');
+      expect(result.stdout).toContain('Migrated: 2 files');
+      expect(result.stdout).toContain('Already current: 2 files');
+    });
+
+    it('should show dry-run results without making changes', () => {
+      createOldVersionBoard('old-board.knbn');
+      
+      const result = runCLI(['migrate', 'old-board.knbn', '--dry-run']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('🔄 old-board.knbn: Would migrate from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('Would migrate: 1 files');
+      expect(result.stdout).toContain('Run without --dry-run to perform the migration');
+
+      // Verify the file was NOT actually migrated
+      const yaml = require('js-yaml');
+      const content = fs.readFileSync(path.join(tempDir, 'old-board.knbn'), 'utf8');
+      const board = yaml.load(content) as any;
+      expect(board.metadata.version).toBe('0.1.0'); // Still old version
+    });
+
+    it('should create backup files when --backup flag is used', () => {
+      createOldVersionBoard('old-board.knbn');
+      
+      const result = runCLI(['migrate', 'old-board.knbn', '--backup']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('📋 Created backup: old-board.knbn.bak');
+      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1.0 to 0.2.0');
+
+      // Verify backup file exists and contains old version
+      expect(fs.existsSync(path.join(tempDir, 'old-board.knbn.bak'))).toBe(true);
+      
+      const yaml = require('js-yaml');
+      const backupContent = fs.readFileSync(path.join(tempDir, 'old-board.knbn.bak'), 'utf8');
+      const backupBoard = yaml.load(backupContent) as any;
+      expect(backupBoard.metadata.version).toBe('0.1.0');
+
+      // Verify original file was migrated
+      const migratedBoard = loadBoard(path.join(tempDir, 'old-board.knbn') as Filepath);
+      expect(migratedBoard.metadata.version).toBe('0.2.0');
+    });
+
+    it('should skip files already at latest version', () => {
+      const result = runCLI(['migrate', 'test-board-1.knbn']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version (0.2.0)');
+      expect(result.stdout).toContain('Already current: 1 files');
+      expect(result.stdout).toContain('Migrated: 0 files');
+    });
+
+    it('should handle non-existent files gracefully', () => {
+      const result = runCLI(['migrate', 'nonexistent.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('File not found: nonexistent.knbn');
+      expect(result.stdout).toContain('Errors: 1 files');
+    });
+
+    it('should handle invalid board files gracefully', () => {
+      // Create an invalid board file
+      fs.writeFileSync(path.join(tempDir, 'invalid.knbn'), 'invalid: yaml: [content', 'utf8');
+      
+      const result = runCLI(['migrate', 'invalid.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Invalid board file format: invalid.knbn');
+      expect(result.stdout).toContain('Errors: 1 files');
+    });
+
+    it('should handle files missing version information', () => {
+      // Create a board file without version metadata
+      const invalidBoard = {
+        name: 'No Version Board',
+        tasks: {}
+      };
+      
+      const yaml = require('js-yaml');
+      const content = yaml.dump(invalidBoard);
+      fs.writeFileSync(path.join(tempDir, 'no-version.knbn'), content, 'utf8');
+      
+      const result = runCLI(['migrate', 'no-version.knbn']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Invalid board file format: no-version.knbn');
+      expect(result.stdout).toContain('Errors: 1 files');
+    });
+
+    it('should fail when no files specified and --all not used', () => {
+      const result = runCLI(['migrate']);
+      
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain('Please specify files to migrate or use --all flag');
+      expect(result.stdout).toContain('Examples:');
+      expect(result.stdout).toContain('knbn migrate board.knbn');
+      expect(result.stdout).toContain('knbn migrate --all');
+    });
+
+    it('should handle empty directory with --all flag', () => {
+      // Remove all .knbn files
+      const files = fs.readdirSync(tempDir).filter(f => f.endsWith('.knbn'));
+      files.forEach(f => fs.unlinkSync(path.join(tempDir, f)));
+      
+      const result = runCLI(['migrate', '--all']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('No .knbn files found in current directory');
+    });
+
+    it('should handle mixed results correctly', () => {
+      createOldVersionBoard('old-board.knbn');
+      
+      // Create an invalid file
+      fs.writeFileSync(path.join(tempDir, 'invalid.knbn'), 'invalid content', 'utf8');
+      
+      const result = runCLI(['migrate', 'old-board.knbn', 'test-board-1.knbn', 'invalid.knbn', 'nonexistent.knbn']);
+      
+      expect(result.exitCode).toBe(1); // Should exit with error due to failures
+      expect(result.stdout).toContain('✅ old-board.knbn: Migrated from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version');
+      expect(result.stderr).toContain('Invalid board file format: invalid.knbn');
+      expect(result.stderr).toContain('File not found: nonexistent.knbn');
+      expect(result.stdout).toContain('Migrated: 1 files');
+      expect(result.stdout).toContain('Already current: 1 files');
+      expect(result.stdout).toContain('Errors: 2 files');
+    });
+
+    it('should combine dry-run with --all flag', () => {
+      createOldVersionBoard('old-board.knbn');
+      
+      const result = runCLI(['migrate', '--all', '--dry-run']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('🔄 old-board.knbn: Would migrate from 0.1.0 to 0.2.0');
+      expect(result.stdout).toContain('⏭️  test-board-1.knbn: Already at latest version');
+      expect(result.stdout).toContain('Would migrate: 1 files');
+      expect(result.stdout).toContain('Already current: 2 files');
+    });
+
+    it('should combine backup with multiple files', () => {
+      createOldVersionBoard('old-board-1.knbn');
+      createOldVersionBoard('old-board-2.knbn');
+      
+      const result = runCLI(['migrate', 'old-board-1.knbn', 'old-board-2.knbn', '--backup']);
+      
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain('📋 Created backup: old-board-1.knbn.bak');
+      expect(result.stdout).toContain('📋 Created backup: old-board-2.knbn.bak');
+      expect(result.stdout).toContain('Migrated: 2 files');
+
+      // Verify both backup files exist
+      expect(fs.existsSync(path.join(tempDir, 'old-board-1.knbn.bak'))).toBe(true);
+      expect(fs.existsSync(path.join(tempDir, 'old-board-2.knbn.bak'))).toBe(true);
+    });
+  });
 });

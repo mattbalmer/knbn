@@ -311,12 +311,122 @@ Arguments:
 ]
 ```
 
+### Board Migration
+
+#### Migrate Single File
+**Request:**
+```
+Tool: migrate
+Arguments:
+  files: ["old-board.knbn"]
+```
+
+**Response:**
+```json
+{
+  "migratedCount": 1,
+  "skippedCount": 0,
+  "errorCount": 0,
+  "results": [
+    {
+      "filename": "old-board.knbn",
+      "status": "migrated",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.2.0",
+      "message": "Migrated from 0.1.0 to 0.2.0",
+      "backupCreated": false
+    }
+  ],
+  "summary": "Migration Summary:\n  Migrated: 1 files\n  Already current: 0 files"
+}
+```
+
+#### Migrate All Files with Backup
+**Request:**
+```
+Tool: migrate
+Arguments:
+  all: true
+  backup: true
+```
+
+**Response:**
+```json
+{
+  "migratedCount": 2,
+  "skippedCount": 1,
+  "errorCount": 0,
+  "results": [
+    {
+      "filename": "board1.knbn",
+      "status": "migrated",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.2.0",
+      "message": "Migrated from 0.1.0 to 0.2.0",
+      "backupCreated": true
+    },
+    {
+      "filename": "board2.knbn",
+      "status": "migrated",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.2.0",
+      "message": "Migrated from 0.1.0 to 0.2.0",
+      "backupCreated": true
+    },
+    {
+      "filename": "current.knbn",
+      "status": "skipped",
+      "fromVersion": "0.2.0",
+      "toVersion": "0.2.0",
+      "message": "Already at latest version (0.2.0)"
+    }
+  ],
+  "summary": "Migration Summary:\n  Migrated: 2 files\n  Already current: 1 files"
+}
+```
+
+#### Dry-Run Migration
+**Request:**
+```
+Tool: migrate
+Arguments:
+  files: ["board1.knbn", "board2.knbn"]
+  dryRun: true
+```
+
+**Response:**
+```json
+{
+  "migratedCount": 2,
+  "skippedCount": 0,
+  "errorCount": 0,
+  "results": [
+    {
+      "filename": "board1.knbn",
+      "status": "migrated",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.2.0",
+      "message": "Would migrate from 0.1.0 to 0.2.0"
+    },
+    {
+      "filename": "board2.knbn",
+      "status": "migrated",
+      "fromVersion": "0.1.0",
+      "toVersion": "0.2.0",
+      "message": "Would migrate from 0.1.0 to 0.2.0"
+    }
+  ],
+  "summary": "Migration Summary:\n  Would migrate: 2 files\n  Already current: 0 files\n\nRun without dryRun to perform the migration."
+}
+```
+
 ## Available Tools Reference
 
 ### Board Tools
 - `list_boards` - List all .knbn board files
 - `get_board` - Get complete board contents
 - `create_board` - Create new board with name and description
+- `migrate` - Migrate board files to latest version with dry-run and backup options
 
 ### Task Tools
 - `create_task` - Create task with title, description, priority, story points

@@ -19,6 +19,7 @@ import { attachListSprints } from './commands/list-sprints';
 import { attachAddSprint } from './commands/add-sprint';
 import { attachUpdateSprint } from './commands/update-sprint';
 import { attachRemoveSprint } from './commands/remove-sprint';
+import { attachMigrate } from './commands/migrate';
 import { KNBN_CORE_VERSION } from '../core/constants';
 
 const program = new Command();
@@ -55,6 +56,8 @@ export function setupCommander(): Command {
   attachAddSprint(program);
   attachUpdateSprint(program);
   attachRemoveSprint(program);
+  // Utility Commands
+  attachMigrate(program);
   // Default command
   attachDefault(program);
 
