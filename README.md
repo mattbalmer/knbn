@@ -6,28 +6,18 @@ _This is an early, work-in-progress version of the project. Use accepting risk o
 
 ## Overview
 
-KnBn provides three main ways to interact with kanban boards:
+KnBn project contains four main packages, each in their own repo.
 
-- **CLI Interface**: (`knbn-cli`) Command-line tools for creating, updating, and managing tasks and boards
-- **Web Interface**: (`knbn-web`) Browser-based UI via the separate `knbn-web` package  
-- **MCP Protocol**: (`knbn-mcp`) AI assistant integration through Model Context Protocol
-- **Core logic**: (`knbn-core`) Core logic and types, which this package passes through
+- [knbn-core](https://github.com/mattbalmer/knbn-web): Core logic and types
+- [knbn-web](https://github.com/mattbalmer/knbn-web): Browser-based management UI  
+- [knbn-mcp](https://github.com/mattbalmer/knbn-mcp): AI assistant integration via MCP
+- [knbn-cli](https://github.com/mattbalmer/knbn-cli): Command-line tools for managing boards
 
 ## Usage
 
-For basic CLI usage, run via npx:
+Any of the following options will work. Default board file is `.knbn`, but you can create as many as you like, with any name (eg. `project.knbn`).
 
-```bash
-npx knbn-cli
-# or
-npm i -g knbn-cli
-knbn-cli 
-```
-
-## Web Interface
-
-If you plan to use the web interface, install the separate `knbn-web` package:
-
+### Web
 ```bash
 npx knbn-web
 # or
@@ -35,13 +25,15 @@ npm i -g knbn-web
 knbn-web 
 ```
 
-Then use either `knbn-web` or `knbn-cli serve` to start the web server.
-You can specify a custom port with the `-p` option.
+This will open the web interface in your default browser at `http://localhost:9000`, but you can specify a custom port with `-p` option.
 
 ## MCP Server
+Configure your MCP client to use `knbn-mcp`. For example, with Claude Code:
+```bash
+claude mcp add knbn -- npx knbn-mcp
+```
 
-If you want to integrate knbn with AI assistants using the Model Context Protocol (MCP), you can run the MCP server:
-
+The server config JSON looks like:
 ```json
 {
   "mcpServers": {
@@ -53,15 +45,12 @@ If you want to integrate knbn with AI assistants using the Model Context Protoco
 }
 ```
 
-Or, for example with Claude:
+### CLI
+For basic CLI usage, run via npx or install globally.
+
 ```bash
-claude mcp add knbn -- npx knbn-mcp
+npx knbn-cli
+# or
+npm i -g knbn-cli
+knbn-cli 
 ```
-
-## Features
-
-- Command-line kanban board management
-- Task and board operations
-- Board data stored in `.knbn` files
-- Lightweight CLI with optional web interface (`knbn-web` or `knbn-cli serve`)
-- MCP server (see `knbn-mcp`)

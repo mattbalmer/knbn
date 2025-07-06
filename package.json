@@ -1,25 +1,11 @@
 {
   "name": "knbn",
-  "version": "0.4.1",
-  "boardVersion": "0.2",
-  "description": "A simple kanban CLI tool",
+  "version": "0.5.0",
+  "description": "Simple, in-repo Kanban",
   "author": "Matthew Balmer <contact@mattbalmer.com>",
-  "exports": {
-    "./*": "./dist/*.js",
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "dist"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/mattbalmer/knbn"
-  },
-  "scripts": {
-    "build": "rm -rf dist && tsc",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "knbn",
@@ -27,19 +13,5 @@
     "typescript"
   ],
   "license": "MIT",
-  "dependencies": {
-    "js-yaml": "^4.1.0",
-    "knbn-core": "^0.3.3"
-  },
-  "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/js-yaml": "^4.0.9",
-    "@types/node": "^20.5.0",
-    "jest": "^30.0.3",
-    "ts-brand": "^0.2.0",
-    "ts-jest": "^29.4.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
-  },
   "packageManager": "yarn@4.9.2"
 }
